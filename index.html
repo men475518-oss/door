@@ -123,6 +123,30 @@
   #say .who{display:block;font-size:10.5px;letter-spacing:.34em;text-indent:.34em;
     color:rgba(255,238,206,.72);margin-bottom:8px;}
 
+  /* ふきだし */
+  #bubWrap{position:absolute;left:0;top:0;width:0;height:0;z-index:19;pointer-events:none;
+    will-change:transform;}
+  #bubble{
+    position:absolute;left:0;top:0;pointer-events:none;
+    width:-webkit-max-content;width:max-content;
+    max-width:min(72vw,21em);padding:13px 18px 14px;
+    background:rgba(255,250,242,.95);border-radius:17px;
+    box-shadow:0 7px 28px rgba(48,36,62,.30);
+    color:#413b49;font-family:var(--serif);
+    font-size:clamp(12.5px,3.6vw,15px);line-height:1.95;letter-spacing:.07em;text-align:center;
+    opacity:0;transform:translate(-50%,-100%) scale(.9);transform-origin:50% 100%;
+    transition:opacity .40s ease, transform .40s cubic-bezier(.2,1.35,.4,1);
+  }
+  #bubble.show{opacity:1;transform:translate(-50%,-100%) scale(1);}
+  #bubble .bname{display:block;font-size:9.5px;letter-spacing:.30em;text-indent:.30em;
+    color:rgba(65,59,73,.52);margin-bottom:7px;}
+  #bubble .tail{position:absolute;bottom:-9px;width:18px;height:11px;margin-left:-9px;
+    background:rgba(255,250,242,.95);
+    -webkit-clip-path:polygon(0 0,100% 0,50% 100%);clip-path:polygon(0 0,100% 0,50% 100%);}
+  #bubble.dark{background:rgba(26,14,22,.90);color:#e8d6da;box-shadow:0 7px 30px rgba(0,0,0,.6);}
+  #bubble.dark .bname{color:rgba(232,214,218,.45);}
+  #bubble.dark .tail{background:rgba(26,14,22,.90);}
+
   /* open button */
   #btnOpen{position:absolute;right:calc(env(safe-area-inset-right) + 22px);
     bottom:calc(env(safe-area-inset-bottom) + 118px);z-index:18;
@@ -200,6 +224,7 @@
 
   <div id="say"></div>
   <div id="tip"></div>
+  <div id="bubWrap"><div id="bubble"></div></div>
   <button id="btnOpen">ひらく</button>
   <div id="joy"><div id="joyK"></div></div>
 
@@ -2082,6 +2107,7 @@ function enterChapter(i) {
   G.ch = i; G.got = 0; G.unlocked = false; G.sinceGot = 0; G.walked = 0; G.walkLine = 0;
   G.fear = 0; G.heartT = 1; G.whisT = 7; G.nightBeat = false; G.birdT = 6;
   $('dread').style.opacity = 0;
+  bubbleHide();
   const cfg = CHAPTERS[i];
   G.need = cfg.lanterns;
   W = buildWorld(cfg);
@@ -2223,6 +2249,7 @@ function onOpenDoor() {
   IN.mv.x = IN.mv.y = 0;
   $('btnOpen').classList.remove('show');
   $('joy').classList.remove('on');
+  bubbleHide();
   $('hud').classList.add('hidden');
   $('say').classList.remove('show');
 
@@ -2545,7 +2572,7 @@ function beginJourney() {
 /* =========================================================================
    UPDATE
    ========================================================================= */
-let _v1, _v2, _tgt, camTarget;   /* THREE 読み込み後に生成 */
+let _v1, _v2, _tgt, camTarget, _bv;   /* THREE 読み込み後に生成 */
 
 function updatePlayer(dt) {
   const inp = (G.state === 'play' && IN.enabled) ? readInput() : { x: 0, y: 0, len: 0 };
@@ -2816,6 +2843,7 @@ function loop() {
     updateBursts(dt);
   }
   renderer.render(scene, camera);
+  updateBubble();
 
   /* かんたんな 自動画質調整 */
   frames++; fpsT += dt;
@@ -2849,7 +2877,7 @@ function initGame() {
   camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, .1, 1400);
   clock = new THREE.Clock();
   _v1 = new THREE.Vector3(); _v2 = new THREE.Vector3();
-  _tgt = new THREE.Vector3(); camTarget = new THREE.Vector3();
+  _tgt = new THREE.Vector3(); camTarget = new THREE.Vector3(); _bv = new THREE.Vector3();
   initTextures();
   PL = makePlayer();
   initInput();
@@ -2969,8 +2997,9 @@ function makeFigure(o) {
   if (o.bend) { body.rotation.x = o.bend; head.position.z = o.bend * .5; hairM.position.z = o.bend * .5; }
   if (o.sit) {
     legL.rotation.x = -1.35; legR.rotation.x = -1.35;
-    g.position.y -= .34;
     armL.rotation.x = -.5; armR.rotation.x = -.5;
+    g.children.forEach(c => { c.position.y -= .34; });
+    parts.sit = true;
   }
   g.scale.setScalar(o.scale || 1);
   return parts;
@@ -3065,8 +3094,21 @@ function spawnCast(w, cfg) {
 
   (cfg.people || []).forEach(def => {
     const f = FIGURES[def.kind];
-    const pos = place(def.at[0], def.at[1]);
-    if (cfg.water && pos.y < cfg.water.level + .3) pos.y = cfg.water.level + .3;
+    let pos = place(def.at[0], def.at[1]);
+    /* みずの なかには 立たせない : まわりの おかを さがす */
+    if (cfg.water && pos.y < cfg.water.level + .45) {
+      for (let step = 1; step <= 9; step++) {
+        let found = null;
+        for (let k = 0; k < 12; k++) {
+          const a2 = (k / 12) * TAU + step;
+          const cx = pos.x + Math.sin(a2) * step * 2.2, cz = pos.z + Math.cos(a2) * step * 2.2;
+          const hy = H(cx, cz);
+          if (hy > cfg.water.level + .5 && hy < cfg.water.level + 3.2) { found = new THREE.Vector3(cx, hy, cz); break; }
+        }
+        if (found) { pos = found; break; }
+      }
+      if (pos.y < cfg.water.level + .45) pos.y = cfg.water.level + .45;
+    }
     const fig = makeFigure(f);
     fig.g.position.copy(pos);
     fig.g.rotation.y = Math.atan2(-pos.x, -pos.z);
@@ -3084,6 +3126,7 @@ function spawnCast(w, cfg) {
     w.group.add(sh);
     cast.people.push({
       fig, mark, pos, name: f.name, pitch: f.pitch, lines: def.lines.slice(),
+      top: (fig.sit ? 1.48 : 1.86) * (f.scale || 1) + .18,
       i: 0, last: -99, ph: rnd() * TAU, face: fig.g.rotation.y, faceT: fig.g.rotation.y
     });
     /* つれ（いぬ など） */
@@ -3290,9 +3333,9 @@ function updateTalk(dt) {
   if (!cast || G.state !== 'play') return;
   cast.people.forEach(n => {
     const d = Math.hypot(PL.pos.x - n.pos.x, PL.pos.z - n.pos.z);
-    if (d < 3.6 && n.i < n.lines.length && G.t - n.last > 3.6) {
+    if (d < 3.8 && n.i < n.lines.length && G.t - n.last > 3.9) {
       n.last = G.t;
-      say(n.lines[n.i], 5600, n.name);
+      bubbleShow(n, n.lines[n.i]);
       SFX.talk(n.pitch + (n.i % 2 ? 5 : 0));
       n.i++;
       if (n.i >= n.lines.length) G.metPeople++;
@@ -3376,6 +3419,49 @@ function nightmareBeat() {
   SFX.sting();
   MUS.duckHard(2.4);
   say('うしろに、だれか いる。', 3400);
+}
+
+/* =========================================================================
+   ふきだし  ―  あたまの うえに ついてくる
+   ========================================================================= */
+const BUB = { npc: null, until: 0 };
+
+function bubbleShow(n, text) {
+  const el = $('bubble');
+  el.innerHTML = '<span class="bname">' + n.name + '</span>' +
+    text.replace(/\n/g, '<br>') + '<i class="tail"></i>';
+  el.classList.toggle('dark', !!(W && W.cfg && W.cfg.nightmare));
+  BUB.npc = n;
+  BUB.until = G.t + 5.8;
+  updateBubble();
+  el.classList.add('show');
+}
+
+function bubbleHide() {
+  BUB.npc = null;
+  const el = $('bubble');
+  if (el) el.classList.remove('show');
+}
+
+function updateBubble() {
+  const n = BUB.npc;
+  if (!n) return;
+  const el = $('bubble'), wrap = $('bubWrap');
+  if (G.t > BUB.until || G.state !== 'play') { bubbleHide(); return; }
+
+  _bv.set(n.pos.x, n.pos.y + (n.top || 2.0), n.pos.z).project(camera);
+  const w = innerWidth, h = innerHeight;
+  const x = (_bv.x * .5 + .5) * w, y = (-_bv.y * .5 + .5) * h;
+  const d = Math.hypot(PL.pos.x - n.pos.x, PL.pos.z - n.pos.z);
+  if (_bv.z > 1 || d > 16 || x < -200 || x > w + 200) { el.classList.remove('show'); return; }
+
+  const bw = el.offsetWidth || 200, bh = el.offsetHeight || 60;
+  const cx = clamp(x, bw / 2 + 10, Math.max(bw / 2 + 10, w - bw / 2 - 10));
+  const cy = clamp(y - 14, bh + 20, h - 90);
+  wrap.style.transform = 'translate(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px)';
+  const tail = el.querySelector('.tail');
+  if (tail) tail.style.left = clamp(x - (cx - bw / 2), 16, bw - 16).toFixed(1) + 'px';
+  el.classList.add('show');
 }
 </script>
 <script>
