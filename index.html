@@ -35,6 +35,13 @@
       linear-gradient(to bottom, rgba(255,246,232,.10), rgba(255,246,232,0) 26%);
     mix-blend-mode:multiply;opacity:.9;
   }
+  #dread{
+    position:absolute;inset:0;pointer-events:none;z-index:7;opacity:0;
+    transition:opacity .55s ease;
+    background:
+      radial-gradient(105% 62% at 50% 48%, rgba(0,0,0,0) 26%, rgba(28,2,8,.55) 62%, rgba(10,0,4,.94) 100%),
+      radial-gradient(150% 100% at 50% 50%, rgba(120,10,26,.16), rgba(0,0,0,0) 60%);
+  }
   #grain{
     position:absolute;inset:0;pointer-events:none;z-index:6;opacity:.055;
     background-image:var(--grain);background-size:180px 180px;
@@ -113,6 +120,8 @@
     color:#fffaf2;text-shadow:0 2px 14px rgba(40,30,60,.85),0 0 30px rgba(30,20,50,.6);
     opacity:0;transition:opacity 1.5s ease, transform 1.5s ease;}
   #say.show{opacity:1;transform:translate(-50%,0);}
+  #say .who{display:block;font-size:10.5px;letter-spacing:.34em;text-indent:.34em;
+    color:rgba(255,238,206,.72);margin-bottom:8px;}
 
   /* open button */
   #btnOpen{position:absolute;right:calc(env(safe-area-inset-right) + 22px);
@@ -180,6 +189,7 @@
 <div id="stage">
   <canvas id="gl"></canvas>
   <div id="vignette"></div>
+  <div id="dread"></div>
   <div id="grain"></div>
 
   <div id="hud" class="hidden">
@@ -215,7 +225,7 @@
     <div class="rule"></div>
     <div class="spacer"></div>
     <button id="btnStart">はじめる</button>
-    <div class="credit">ゆっくり あるいて、8ぷんほど。<br>イヤホン推奨 ― 音が この世界の半分です。</div>
+    <div class="credit">ゆっくり あるいて、15ふんほど。<br>とちゅうに、すこし こわい よるが あります。<br>イヤホン推奨 ― 音が この世界の半分です。</div>
   </div>
 
   <div id="fade"></div>
@@ -530,6 +540,15 @@ const LH = {
     }
     if (c.inten > .78 && lb === 2) out.push({ m: Math.max(ch.m[0] - 12, LOWCAP), t: 0, d: 2, v: .19 });
   },
+  /* しのびよる : わすれられた夢 */
+  creep(ch, lb, out, c) {
+    const L = ch.m.length;
+    if (lb === 0) out.push({ m: Math.max(ch.m[0] - 12, 26), t: 0, d: 9, v: .30 });
+    if (lb === 1 && c.rnd() < .8) out.push({ m: ch.m[1 % L], t: .5, d: 5, v: .155 });
+    if (lb === 2 && c.rnd() < .62) out.push({ m: ch.m[2 % L], t: .25, d: 4, v: .135 });
+    if (lb === 3 && c.rnd() < .5) out.push({ m: ch.m[3 % L] + 12, t: .5, d: 3, v: .115 });
+    if (lb === 2 && c.inten > .7 && c.rnd() < .3) out.push({ m: ch.m[0] + 1, t: .75, d: 2, v: .10 });
+  },
   /* ささやき : エンディング */
   hush(ch, lb, out) {
     const L = ch.m.length;
@@ -653,6 +672,25 @@ const TRACKS = {
     harmony: true    /* 高揚すると内声のハモリが加わる */
   },
 
+  /* 6. 中盤の悪夢：こわれたピアノ、三全音と半音のきしみ */
+  nightmare: {
+    name: 'わすれられた夢', bpm: 50, beats: 32, lh: 'creep', rev: .66, spark: .10, detune: 26,
+    vars: [0, 3, 0, 2],
+    chords: [
+      { b: 0, m: ['C2', 'F#2', 'C3', 'D3'] },
+      { b: 8, m: ['B1', 'F2', 'Bb2', 'E3'] },
+      { b: 16, m: ['A1', 'Eb2', 'A2', 'B2'] },
+      { b: 24, m: ['G1', 'Db2', 'G2', 'Ab2'] }
+    ],
+    melody: [
+      ['G4', 2, 3, .34], ['F#4', 5, 2.5, .30],
+      ['C5', 9, 2, .32], ['B4', 11, 3, .27],
+      ['Eb5', 17, 2, .34], ['D5', 19, 2, .29], ['A4', 22, 3, .25],
+      ['Ab4', 26, 2, .30], ['G4', 28, 4, .24]
+    ],
+    echo: .58
+  },
+
   /* 5. エンディング：余韻の深い しずけさ */
   ending: {
     name: 'またあおう', bpm: 52, beats: 32, lh: 'hush', rev: .64, spark: .11,
@@ -750,6 +788,18 @@ const MUS = {
 
   stopAll(fadeOut) { this.fadeOthers(fadeOut === undefined ? 3 : fadeOut); this.current = null; },
 
+  duckHard(sec) {
+    if (!AU.ready) return;
+    this.live.forEach(tr => {
+      if (tr.fading) return;
+      const g = tr.gain.gain, t = AU.now();
+      g.cancelScheduledValues(t);
+      g.setValueAtTime(g.value, t);
+      g.linearRampToValueAtTime(0.02, t + .12);
+      g.linearRampToValueAtTime(tr.level, t + (sec || 2.5));
+    });
+  },
+
   setIntensity(v) {
     this.intensity = clamp(v, 0, 1);
     this.live.forEach(tr => { if (!tr.fading) tr.intensity = this.intensity; });
@@ -792,6 +842,7 @@ const MUS = {
     const inten = tr.intensity;
     const vmode = def.vars ? def.vars[tr.loop % def.vars.length] : 0;
     const H = () => (Math.random() - .5) * .024;
+    const DT = () => (def.detune ? (Math.random() - .5) * def.detune : 0);
     const ch = def.chords[def.chordAt[b]];
     const lb = b - ch.b;
     const dyn = .58 + .42 * inten;
@@ -802,7 +853,7 @@ const MUS = {
     for (const e of evs) {
       let v = e.v * dyn;
       if (vmode === 2) v *= .72;
-      AU.note(e.m, T + e.t * bd + H(), e.d * bd, v, { out, send, rev, damp: e.damp, soft: vmode === 2 ? .6 : 0 });
+      AU.note(e.m, T + e.t * bd + H(), e.d * bd, v, { out, send, rev, damp: e.damp, soft: vmode === 2 ? .6 : 0, detune: DT() });
     }
 
     /* --- 右手（旋律） --- */
@@ -813,9 +864,9 @@ const MUS = {
       const t = T + (e[1] - b) * bd + H() * 1.4;
       const v = e[3] * dyn;
       if (vmode === 2) {
-        AU.note(e[0] + 12, t, e[2] * bd, v * .40, { out, send, rev: rev + .16, soft: 1, pan: .10 });
+        AU.note(e[0] + 12, t, e[2] * bd, v * .40, { out, send, rev: rev + .16, soft: 1, pan: .10, detune: DT() });
       } else {
-        AU.note(e[0], t, e[2] * bd, v, { out, send, rev });
+        AU.note(e[0], t, e[2] * bd, v, { out, send, rev, detune: DT() });
         if (vmode === 1 || vmode === 4) AU.note(e[0] + 12, t + .012, e[2] * bd, v * .30, { out, send, rev: rev + .12, soft: 1, pan: .16 });
         if (def.harmony && (inten > .62 || vmode === 4)) {
           const h = harmonize(e[0], ch);
@@ -832,7 +883,7 @@ const MUS = {
       const pool = ch.m;
       let m = pool[(Math.random() * pool.length) | 0] + 24 + (Math.random() < .35 ? 12 : 0);
       AU.note(m, T + Math.random() * bd, bd * 1.5, .09 + Math.random() * .08,
-        { out, send, rev: rev + .22, pan: (Math.random() - .5) * .8, soft: 1 });
+        { out, send, rev: rev + .22, pan: (Math.random() - .5) * .8, soft: 1, detune: DT() });
     }
 
     /* --- 遠い残響のベッド（8拍ごと） --- */
@@ -907,6 +958,58 @@ const SFX = {
     const t = AU.now() + .05;
     [0, 7, 12].forEach((d, i) => AU.note(65 + d, t + i * .30, 5, .22 - i * .03, { rev: .85, soft: 1, pan: i * .2 - .2 }));
   },
+  /* はなしかける : やわらかな2音 */
+  talk(base) {
+    if (!AU.ready) return;
+    const t = AU.now() + .01;
+    AU.note(base, t, 1.4, .24, { rev: .5, soft: 1 });
+    AU.note(base + 5, t + .13, 1.6, .19, { rev: .55, soft: 1, pan: .18 });
+  },
+  /* みずの おと */
+  plink() {
+    if (!AU.ready) return;
+    const t = AU.now() + .01, b = 84 + ((Math.random() * 5) | 0) * 2;
+    AU.note(b, t, .7, .17, { rev: .65, soft: 1, pan: (Math.random() - .5) * .7 });
+    AU.note(b + 7, t + .05, .6, .10, { rev: .7, soft: 1, pan: (Math.random() - .5) * .7 });
+  },
+  /* とりの こえ */
+  bird() {
+    if (!AU.ready) return;
+    const t = AU.now() + .01, b = 93 + ((Math.random() * 4) | 0);
+    for (let i = 0; i < 3; i++)
+      AU.note(b + (i % 2 ? 2 : 0), t + i * .07, .28, .13 - i * .02,
+        { rev: .55, soft: 1, damp: true, pan: (Math.random() - .5) * .8 });
+  },
+  /* こどう : 悪夢 */
+  heart(v) {
+    if (!AU.ready) return;
+    const t = AU.now() + .01;
+    AU.note(26, t, .30, .30 * v, { rev: .25, soft: 1, damp: true, ring: .5 });
+    AU.note(26, t + .21, .30, .20 * v, { rev: .25, soft: 1, damp: true, ring: .5 });
+  },
+  /* ささやき : くるったクラスター */
+  whisper() {
+    if (!AU.ready) return;
+    const t = AU.now() + .01, b = 68 + ((Math.random() * 10) | 0);
+    const pan = (Math.random() - .5) * 1.6;
+    [0, 1, 6].forEach((d, i) =>
+      AU.note(b + d, t + i * .045, 2.4, .085, { rev: .9, soft: 1, pan, detune: (Math.random() - .5) * 60 }));
+  },
+  /* ぞっとする一撃 */
+  sting() {
+    if (!AU.ready) return;
+    const t = AU.now();
+    [0, 1, 6, 13].forEach((d, i) =>
+      AU.note(38 + d, t + i * .012, 3.5, .48, { rev: .7, detune: (Math.random() - .5) * 45 }));
+    [0, 6].forEach((d, i) => AU.note(86 + d, t + .02 + i * .03, 2.5, .22, { rev: .85, soft: 1, pan: i ? .5 : -.5 }));
+  },
+  /* 悪夢を ぬけた ときの あんど */
+  relief() {
+    if (!AU.ready) return;
+    const t = AU.now() + .02;
+    ['F2', 'C3', 'F3', 'A3', 'C4', 'F4', 'A4', 'C5'].forEach((s2, i) =>
+      AU.note(nn(s2), t + i * .10, 7, .30 - i * .015, { rev: .95, soft: i > 4 ? 1 : 0, pan: -.3 + i * .08 }));
+  },
   /* 最後の光 */
   finale() {
     if (!AU.ready) return;
@@ -931,9 +1034,23 @@ const CHAPTERS = [
     rock: { count: 26, color: '#cfcabf' },
     mote: { count: 240, color: '#fff4d2', size: .5, rise: .35, spread: 70 },
     cloud: 9,
-    water: { level: 0, deep: '#7fb5d6', shallow: '#cbe9f2', lakes: [[-1.45, .42, 21, 6.0]] },
+    water: { level: 0, deep: '#7fb5d6', shallow: '#cbe9f2', lakes: [[-1.45, .42, 21, 6.0]], fish: true },
     light: { hemiSky: '#ffeed8', hemiGround: '#9fb08c', dir: '#fff3dd', dirInt: 1.0, amb: .46 },
-    lantern: '#fff0c0',
+    lantern: '#fff0c0', birdCall: 11,
+    people: [
+      {
+        kind: 'child', at: [2.5, .34], pet: 'dog', petColor: '#e8d3b4',
+        lines: ['ここで ずっと まってるんだ。', 'だれを まってるの? って?',
+          'じぶんでも、わすれちゃった。', 'でも まってるの、きらいじゃないよ。']
+      },
+      {
+        kind: 'hat', at: [-1.9, .58],
+        lines: ['きみも、とびらを あけるひと?', 'ぼくは もうすこし ここで やすむよ。',
+          'いそがなくて いい。みちは にげないから。']
+      }
+    ],
+    animals: [{ kind: 'deer', n: 3, color: '#d4b394', shy: true }],
+    flock: { groups: 2, n: 9, color: '#f4ead8' },
     lines: [
       'いつからか、ここを あるいている。',
       'ひかりは いつも、すこしだけ さきにある。',
@@ -944,7 +1061,7 @@ const CHAPTERS = [
   },
   {
     no: '二', title: 'みずの にわ', cap: 'しずかな みずの うえ',
-    bgm: 'field2', bgmLevel: 1.25, lanterns: 6, radius: 92, seed: 77213, doorAngle: 2.15, variant: 1,
+    bgm: 'field2', bgmLevel: 1.25, lanterns: 5, radius: 92, seed: 77213, doorAngle: 2.15, variant: 1,
     sky: { top: '#8fa8d8', mid: '#c9d2ee', bot: '#ecd9ea', sun: '#fdeaf2', sunDir: [-.5, .18, .84], pow: 90 },
     fog: { color: '#d5dcee', density: .0145 },
     ground: { grass: '#9dbfae', grass2: '#b7d3c0', dry: '#e2dcc9', rock: '#b9bcc6', amp: 7.2, base: 2.8 },
@@ -952,21 +1069,56 @@ const CHAPTERS = [
     flower: { count: 300, colors: ['#f6d6e4', '#e9eefb', '#fdf4de', '#cfe4ea'] },
     rock: { count: 34, color: '#b6b9c3' },
     mote: { count: 300, color: '#eaf1ff', size: .55, rise: .22, spread: 74 },
-    cloud: 7, water: { level: 0, deep: '#5f8fb8', shallow: '#b9dced', lakes: [[1.15, .34, 31, 8.0], [-1.35, .56, 19, 6.0]] },
+    cloud: 7,
+    water: { level: 0, deep: '#5f8fb8', shallow: '#b9dced', lakes: [[1.15, .34, 31, 8.0], [-1.35, .56, 19, 6.0]], fish: true },
     light: { hemiSky: '#e6ecff', hemiGround: '#8fa0a8', dir: '#f3e6f2', dirInt: .82, amb: .52 },
-    lantern: '#e8f4ff',
+    lantern: '#e8f4ff', birdCall: 15,
+    people: [
+      {
+        kind: 'water', at: [1.15, .52],
+        lines: ['みずに うつるものを、ずっと みていた。', 'なくしたものが、そこに いるきが して。',
+          'でも、すくおうとすると きえるんだ。', 'きみは、まだ すくえるものを もっている?']
+      },
+      {
+        kind: 'girl', at: [-1.0, .40],
+        lines: ['さかなが とんだよ! みた?', 'いま! いま とんだの!',
+          '……つぎは、いっしょに みようね。']
+      }
+    ],
+    animals: [{ kind: 'wader', n: 5, color: '#f2f4fa' }, { kind: 'deer', n: 2, color: '#c8bcc4', shy: true }],
+    flock: { groups: 2, n: 7, color: '#e4ecfa' },
     lines: [
       'みずの おもてに、そらが うつっている。',
       'なくしたものの かたちを、まだ おぼえている。',
       'しずかな ばしょほど、こえが よく きこえる。',
       'だれかが ここで、ずっと まっていた きがする。',
-      'かえりみちは、もう おもいだせない。',
       'それでも、あるいてゆく。'
     ]
   },
   {
-    no: '三', title: 'ゆうぐれの おか', cap: 'そらが いろを かえる ころ',
-    bgm: 'dusk', lanterns: 6, radius: 90, seed: 991733, doorAngle: 1.0, variant: 2,
+    no: '三', title: 'わすれられた夢', cap: 'とじた とびらの うら',
+    bgm: 'nightmare', bgmLevel: 1.15, lanterns: 4, radius: 62, seed: 66613, doorAngle: 2.6, variant: 4,
+    nightmare: true,
+    sky: { top: '#120c18', mid: '#2a1220', bot: '#4a1c22', sun: '#5e1c1c', sunDir: [.3, -.05, -.95], pow: 16, i: .30 },
+    fog: { color: '#231520', density: .0270 },
+    ground: { grass: '#392a3c', grass2: '#4a3144', dry: '#523339', rock: '#281e2a', amp: 11.5 },
+    tree: { count: 90, foliage: ['#1b1320', '#251827', '#2e1b26'], trunk: '#150e18', h: [4.0, 8.0], dead: true },
+    flower: { count: 150, colors: ['#4e2233', '#3c1c2a', '#5a2638'] },
+    rock: { count: 30, color: '#1f1721' },
+    mote: { count: 190, color: '#8a2432', size: .55, rise: -.12, spread: 42 },
+    cloud: 0, water: null, shadows: 6,
+    light: { hemiSky: '#5e3745', hemiGround: '#1c1220', dir: '#8e2830', dirInt: .60, amb: .34 },
+    lantern: '#ff9a6a',
+    lines: [
+      'ここは、とじた とびらの うら。',
+      'おいてきたものは、きえてなんか いなかった。',
+      'せなかに、こえが はりついている。',
+      'にげなくて いい。ただ、あるけ。'
+    ]
+  },
+  {
+    no: '四', title: 'ゆうぐれの おか', cap: 'そらが いろを かえる ころ',
+    bgm: 'dusk', lanterns: 5, radius: 90, seed: 991733, doorAngle: 1.0, variant: 2,
     sky: { top: '#5b5f9c', mid: '#d089a4', bot: '#ffc186', sun: '#ffd9a0', sunDir: [.86, .10, .50], pow: 60 },
     fog: { color: '#d3a0aa', density: .0135 },
     ground: { grass: '#6f6494', grass2: '#93789e', dry: '#c39a84', rock: '#7d7196', amp: 8.4 },
@@ -976,18 +1128,31 @@ const CHAPTERS = [
     mote: { count: 280, color: '#ffd6a8', size: .6, rise: .3, spread: 76 },
     cloud: 11, water: null, floaters: 10,
     light: { hemiSky: '#a99ad4', hemiGround: '#584d74', dir: '#ffd0a0', dirInt: 2.1, amb: .40 },
-    lantern: '#ffdda8',
+    lantern: '#ffdda8', birdCall: 18,
+    people: [
+      {
+        kind: 'granny', at: [-1.25, .46],
+        lines: ['わたしも、たくさんの とびらを あけたよ。', 'こわくて、あけられなかった とびらもある。',
+          'あの ゆめの ばしょ、とおってきたのね。', 'だいじょうぶ。ぜんぶ、あなたの ものよ。']
+      },
+      {
+        kind: 'hat', at: [1.6, .60],
+        lines: ['また あえたね。', 'きみを みていたら、ぼくも あるきたくなった。',
+          'さきに いくよ。とびらの むこうで。']
+      }
+    ],
+    animals: [{ kind: 'deer', n: 3, color: '#a08498', shy: true }],
+    flock: { groups: 2, n: 11, color: '#ffd0a8' },
     lines: [
       'ゆうひは、さよならの いろを している。',
       'たいせつなものほど、かるくなって とんでゆく。',
       'さびしさは、やさしさの べつの なまえ。',
       'ここまで きたことを、だれも しらなくていい。',
-      'もうすこし。もう すこしだけ。',
       'とびらの むこうに、あさが ある。'
     ]
   },
   {
-    no: '四', title: 'さいごの かいだん', cap: 'ひかりの みちを ゆく',
+    no: '五', title: 'さいごの かいだん', cap: 'ひかりの みちを ゆく',
     bgm: 'dusk', bgmIntensity: .34, bgmLevel: 1.1, lanterns: 0, radius: 74, seed: 30301, doorAngle: 0, variant: 3,
     sky: { top: '#232a52', mid: '#4b5088', bot: '#9d90bb', sun: '#dfe4ff', sunDir: [0, .34, -1], pow: 40 },
     fog: { color: '#3d4274', density: .0165 },
@@ -999,10 +1164,11 @@ const CHAPTERS = [
     cloud: 0, water: null, stars: true, path: true,
     light: { hemiSky: '#a6b0ea', hemiGround: '#3c4070', dir: '#c9d2ff', dirInt: .55, amb: .34 },
     lantern: '#dfe8ff',
+    animals: [{ kind: 'cat', n: 1, color: '#eae4f2', tame: true }],
     lines: [],
     walkLines: [
       'ながい たびだった。',
-      'ふりかえると、あんなに ちいさい。',
+      'ねこが、ついてきている。',
       'もっていたものは、ぜんぶ ひかりに なった。',
       'このさきは、あさの いろ。'
     ]
@@ -1011,9 +1177,10 @@ const CHAPTERS = [
 
 const ENDING_LINES = [
   'とびらを あける たびに、\nすこしずつ かるく なった。',
-  'もっていたものを、\nひとつずつ おいてきた。',
+  'であった ひとたちは、\nみんな なにかを まっていた。',
+  'まつことも、たびの ひとつ\nだったのかもしれない。',
+  'こわかった よるも、\nいまは とおい あかりに みえる。',
   'さいごに のこったのは、\nあるいた、ということ だけ。',
-  'それだけで じゅうぶん。\nそんな きが している。',
   'またね、と いえる くらいには、\nやさしく なれた だろうか。'
 ];
 
@@ -1029,7 +1196,8 @@ const $ = id => document.getElementById(id);
 const G = {
   state: 'boot', ch: 0, got: 0, need: 0, unlocked: false,
   t: 0, walked: 0, sinceGot: 0, hintDone: false, walkLine: 0,
-  muted: false, fps: 60, quality: 1
+  muted: false, fps: 60, quality: 1,
+  fear: 0, heartT: 0, whisT: 6, nightBeat: false, metPeople: 0, birdT: 8
 };
 
 /* -------------------------------------------------- procedural textures */
@@ -1384,7 +1552,8 @@ function buildWorld(cfg) {
     const cc = new THREE.Color();
     spots.forEach((s, i) => {
       const hgt = t.h[0] + rnd() * (t.h[1] - t.h[0]);
-      const wid = .95 + rnd() * .78;
+      let wid = .95 + rnd() * .78;
+      if (t.dead) wid *= .30;
       q.setFromEuler(new THREE.Euler(0, rnd() * TAU, 0));
       pv.set(s[0], s[1] - .1, s[2]);
       sc.set(wid * .55, hgt * .46, wid * .55);
@@ -1572,6 +1741,8 @@ function buildWorld(cfg) {
   bp.y = H(bp.x, bp.z);
   const back = createDoor(w, bp, Math.atan2(-backDir.x, -backDir.z) + Math.PI, cfg, 0, true);
   w.backDoor = back;
+
+  spawnCast(w, cfg);
 
   return w;
 }
@@ -1838,9 +2009,9 @@ function readInput() {
    UI helpers
    ========================================================================= */
 let sayTimer = null;
-function say(text, hold) {
+function say(text, hold, who) {
   const el = $('say');
-  el.innerHTML = text.replace(/\n/g, '<br>');
+  el.innerHTML = (who ? '<span class="who">' + who + '</span>' : '') + text.replace(/\n/g, '<br>');
   el.classList.add('show');
   clearTimeout(sayTimer);
   sayTimer = setTimeout(() => el.classList.remove('show'), (hold || 5200));
@@ -1909,6 +2080,8 @@ function disposeWorld() {
 function enterChapter(i) {
   disposeWorld();
   G.ch = i; G.got = 0; G.unlocked = false; G.sinceGot = 0; G.walked = 0; G.walkLine = 0;
+  G.fear = 0; G.heartT = 1; G.whisT = 7; G.nightBeat = false; G.birdT = 6;
+  $('dread').style.opacity = 0;
   const cfg = CHAPTERS[i];
   G.need = cfg.lanterns;
   W = buildWorld(cfg);
@@ -1936,6 +2109,10 @@ function enterChapter(i) {
   if (i === 0) {
     setTimeout(() => tip('左：あるく ／ 右：みまわす', 7000), 3600);
     setTimeout(() => say('ひかりを あつめると、\nとびらが ひらく。', 6000), 8500);
+    setTimeout(() => tip('ひとに ちかづくと、はなしてくれる', 6000), 16000);
+  }
+  if (cfg.nightmare) {
+    setTimeout(() => tip('なにも おそっては こない。あるけば いい。', 7000), 5200);
   }
 }
 
@@ -1972,6 +2149,11 @@ function collect(l, idx) {
     },
     end: () => { l.g.visible = false; }
   }]);
+
+  if (cfg.nightmare && G.got === 2 && !G.nightBeat) {
+    G.nightBeat = true;
+    TL.run([{ d: 1.6 }, { d: .01, end: nightmareBeat }]);
+  }
 
   if (G.got >= G.need) unlockDoor();
 }
@@ -2055,6 +2237,12 @@ function onOpenDoor() {
 
   SFX.door(CHAPTERS[G.ch].variant);
   AU.duck(.18, 6.5);
+  if (CHAPTERS[G.ch].nightmare) {
+    MUS.stopAll(1.2);
+    G.fear = 0;
+    $('dread').style.opacity = 0;
+    setTimeout(() => SFX.relief(), 1500);
+  }
 
   const last = G.ch >= CHAPTERS.length - 1;
 
@@ -2212,6 +2400,37 @@ function buildEndingWorld() {
     dd.panelMat.uniforms.uLit.value = .55 - i * .07;
     dd.g.scale.setScalar(1 + i * .06);
     w.doors.push(dd);
+  }
+
+  /* であった ひとたち が、とびらの そばに たっている */
+  w.cast = { people: [], animals: [], flocks: [], shadows: [] };
+  const CASTLIST = [['child', 'dog'], ['hat', null], ['water', null], ['girl', null], ['granny', null]];
+  w.doors.forEach((dd, i) => {
+    const c = CASTLIST[i]; if (!c) return;
+    const f = FIGURES[c[0]];
+    const px = dd.pos.x + (i % 2 ? 3.2 : -3.2), pz = dd.pos.z + 1.8;
+    const fig = makeFigure(f);
+    fig.g.position.set(px, H(px, pz), pz);
+    w.group.add(fig.g);
+    w.cast.people.push({
+      fig, mark: null, pos: new THREE.Vector3(px, H(px, pz), pz),
+      name: f.name, pitch: f.pitch, lines: [], i: 0, last: 1e9, ph: i * 1.7, face: 0, faceT: 0
+    });
+    if (c[1]) {
+      const a = makeAnimal(c[1], '#e8d3b4');
+      const ap = new THREE.Vector3(px + 1.4, 0, pz + .7); ap.y = H(ap.x, ap.z);
+      a.g.position.copy(ap);
+      w.group.add(a.g);
+      w.cast.animals.push({ o: a, home: ap.clone(), pos: ap, tgt: ap.clone(), sp: 0, wait: 2, kind: c[1], ph: 0, face: 0 });
+    }
+  });
+  /* ねこ が ついてくる */
+  {
+    const cat = makeAnimal('cat', '#eae4f2');
+    const cp = new THREE.Vector3(2.4, 0, 2.6); cp.y = H(cp.x, cp.z);
+    cat.g.position.copy(cp);
+    w.group.add(cat.g);
+    w.cast.animals.push({ o: cat, home: cp.clone(), pos: cp, tgt: cp.clone(), sp: 0, wait: 1, kind: 'cat', tame: true, ph: 0, face: 0 });
   }
 
   /* 花びら */
@@ -2386,7 +2605,9 @@ function updatePlayer(dt) {
   PL.g.position.y += Math.abs(c) * .045 * PL.speed;
   PL.body.rotation.z = s * .04 * PL.speed;
   PL.cape.rotation.x = -s * .05 * PL.speed;
-  PL.lamp.material.opacity = .24 + .10 * Math.sin(G.t * 1.7);
+  const nm = W && W.cfg && W.cfg.nightmare;
+  PL.lamp.material.opacity = (nm ? .55 : .24) + (nm ? .16 : .10) * Math.sin(G.t * 1.7);
+  PL.lamp.scale.setScalar(nm ? 3.4 : 1.9);
 
   /* あしおと */
   if (PL.speed > .12 && (G.state === 'play' || G.state === 'ending')) {
@@ -2394,7 +2615,7 @@ function updatePlayer(dt) {
     const iv = .46;
     if (PL.stepT > iv) {
       PL.stepT = 0;
-      const root = [60, 57, 62, 62][G.ch] || 60;
+      const root = [60, 57, 56, 62, 62][G.ch] || 60;
       SFX.step(root);
     }
   }
@@ -2502,6 +2723,12 @@ function updateWorld(dt) {
     l.core.rotation.y += dt * .8;
     l.core.rotation.x += dt * .35;
     l.halo.scale.setScalar(2.6 + Math.sin(l.ph * 1.8) * .38);
+    if (W.cfg && W.cfg.nightmare) {
+      const fl = .45 + .55 * Math.abs(Math.sin(l.ph * 7.3) * Math.sin(l.ph * 3.1 + 1.7));
+      l.core.material.opacity = .35 + fl * .65;
+      l.halo.material.opacity = .3 + fl * .55;
+      l.colMat.uniforms.uI.value = .18 + fl * .30;
+    }
     l.colMat.uniforms.uT.value = W.t;
     l.ring.forEach((s, k) => {
       const a = l.ph * .9 + k * TAU / 3;
@@ -2513,6 +2740,16 @@ function updateWorld(dt) {
       l.colMat.uniforms.uI.value = .46 + p * .40;
     }
   });
+
+  /* であう ものたち */
+  updateCast(W, dt);
+  if (W.cfg && W.cfg.nightmare) updateNightmare(W, dt);
+
+  /* とりの こえ */
+  if (W.cfg && W.cfg.birdCall && G.state === 'play') {
+    G.birdT -= dt;
+    if (G.birdT <= 0) { G.birdT = W.cfg.birdCall * (.6 + Math.random()); SFX.bird(); }
+  }
 
   /* door */
   const dr = W.door;
@@ -2530,6 +2767,7 @@ function updateWorld(dt) {
 function updatePlay(dt) {
   if (G.state !== 'play') return;
   G.sinceGot += dt;
+  updateTalk(dt);
 
   /* ひろう */
   for (let i = 0; i < W.lanterns.length; i++) {
@@ -2667,6 +2905,478 @@ window.__startGame = function () {
     console.error(err);
   }
 };
+
+/* =========================================================================
+   CAST  ―  であう ひと、いきもの、そして かげ
+   ========================================================================= */
+const PHONG = (c, extra) => {
+  const o = { shininess: 0, specular: 0x000000, flatShading: true, color: new THREE.Color(c) };
+  if (extra) for (const k in extra) o[k] = extra[k];
+  return new THREE.MeshPhongMaterial(o);
+};
+
+/* であう ひとたち */
+const FIGURES = {
+  child:  { name: 'こども',        scale: .70, cloth: '#ffd9a8', hair: '#4a3a3a', pitch: 76 },
+  hat:    { name: 'ぼうしの ひと', scale: 1.02, cloth: '#cfd8e8', hair: '#3f3a44', hat: '#b3a189', pitch: 67 },
+  water:  { name: 'みずべの ひと', scale: .98, cloth: '#d8cfe4', hair: '#4a4450', sit: true, pitch: 63 },
+  girl:   { name: 'ちいさな こ',   scale: .66, cloth: '#f8c8d4', hair: '#5a4048', pitch: 79 },
+  granny: { name: 'おばあさん',    scale: .84, cloth: '#e6dcc8', hair: '#ece8e2', bend: .22, cane: true, pitch: 58 }
+};
+
+/* ひとの すがた（からだの つくり） */
+function makeFigure(o) {
+  const g = new THREE.Group();
+  const cloth = PHONG(o.cloth || '#f2f4f8');
+  const skin = PHONG(o.skin || '#f6ddc8');
+  const hair = PHONG(o.hair || '#5a4a55');
+  const parts = { g };
+
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(.20, .30, .62, 7), cloth);
+  body.position.y = .78; g.add(body); parts.body = body;
+
+  if (o.cape) {
+    const cape = new THREE.Mesh(new THREE.ConeGeometry(.42, .92, 7, 1, true),
+      PHONG(o.cape, { side: THREE.DoubleSide }));
+    cape.position.y = .82; g.add(cape); parts.cape = cape;
+  }
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.235, 10, 8), skin);
+  head.position.y = 1.30; g.add(head); parts.head = head;
+  const hairM = new THREE.Mesh(new THREE.SphereGeometry(.255, 10, 8, 0, TAU, 0, Math.PI * (o.bald ? .35 : .62)), hair);
+  hairM.position.y = 1.31; g.add(hairM);
+
+  if (o.hat) {
+    const hm = PHONG(o.hat);
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(.40, .42, .04, 12), hm);
+    brim.position.y = 1.46; g.add(brim);
+    const top = new THREE.Mesh(new THREE.ConeGeometry(.24, .30, 8), hm);
+    top.position.y = 1.60; g.add(top);
+  }
+  const armGeo = new THREE.CylinderGeometry(.062, .05, .5, 5); armGeo.translate(0, -.25, 0);
+  const armL = new THREE.Mesh(armGeo, cloth); armL.position.set(-.26, 1.03, 0); g.add(armL);
+  const armR = new THREE.Mesh(armGeo, cloth); armR.position.set(.26, 1.03, 0); g.add(armR);
+  parts.armL = armL; parts.armR = armR;
+
+  const legGeo = new THREE.CylinderGeometry(.075, .06, .5, 5); legGeo.translate(0, -.25, 0);
+  const legL = new THREE.Mesh(legGeo, cloth); legL.position.set(-.11, .5, 0); g.add(legL);
+  const legR = new THREE.Mesh(legGeo, cloth); legR.position.set(.11, .5, 0); g.add(legR);
+  parts.legL = legL; parts.legR = legR;
+
+  if (o.cane) {
+    const cane = new THREE.Mesh(new THREE.CylinderGeometry(.03, .035, .95, 5), PHONG('#8a7358'));
+    cane.position.set(.34, .48, .10); g.add(cane);
+  }
+  if (o.bend) { body.rotation.x = o.bend; head.position.z = o.bend * .5; hairM.position.z = o.bend * .5; }
+  if (o.sit) {
+    legL.rotation.x = -1.35; legR.rotation.x = -1.35;
+    g.position.y -= .34;
+    armL.rotation.x = -.5; armR.rotation.x = -.5;
+  }
+  g.scale.setScalar(o.scale || 1);
+  return parts;
+}
+
+/* いきもの */
+function makeAnimal(kind, col) {
+  const g = new THREE.Group();
+  const m = PHONG(col);
+  const p = { g, kind, legs: [] };
+  if (kind === 'bird') {
+    const b = new THREE.Mesh(new THREE.ConeGeometry(.12, .46, 5), m);
+    b.rotation.x = Math.PI / 2; g.add(b);
+    const wg = new THREE.PlaneGeometry(.52, .20); wg.translate(.26, 0, 0);
+    const wm = PHONG(col, { side: THREE.DoubleSide });
+    const wl = new THREE.Mesh(wg, wm); wl.rotation.y = Math.PI; g.add(wl);
+    const wr = new THREE.Mesh(wg, wm); g.add(wr);
+    p.wl = wl; p.wr = wr;
+    return p;
+  }
+  if (kind === 'fish') {
+    const b = new THREE.Mesh(new THREE.SphereGeometry(.18, 8, 6), m);
+    b.scale.set(1, .72, 2.1); g.add(b);
+    const t = new THREE.Mesh(new THREE.ConeGeometry(.16, .26, 4), m);
+    t.rotation.x = -Math.PI / 2; t.position.z = -.42; g.add(t);
+    return p;
+  }
+  /* four-legged : 足が 地面に つくように くみたてる */
+  const S = kind === 'deer' ? 1.30 : (kind === 'dog' ? .60 : .44);   /* 全体の たかさ */
+  const legLen = .46, bodyY = .62;
+  const body = new THREE.Mesh(new THREE.BoxGeometry(.34, .30, .80), m);
+  body.position.y = bodyY; g.add(body);
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(.085, .11, .30, 5), m);
+  neck.position.set(0, bodyY + .16, .34); neck.rotation.x = -.5; g.add(neck);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(.22, .20, .30), m);
+  head.position.set(0, bodyY + .30, .46); g.add(head);
+  const ear = new THREE.ConeGeometry(.06, .15, 4);
+  [-1, 1].forEach(sd => {
+    const e = new THREE.Mesh(ear, m);
+    e.position.set(sd * .085, bodyY + .43, .42); e.rotation.z = sd * .28; g.add(e);
+  });
+  if (kind === 'deer') {
+    [-1, 1].forEach(sd => {
+      const a1 = new THREE.Mesh(new THREE.ConeGeometry(.032, .34, 4), m);
+      a1.position.set(sd * .08, bodyY + .58, .44); a1.rotation.z = sd * .34; g.add(a1);
+      const a2 = new THREE.Mesh(new THREE.ConeGeometry(.026, .20, 4), m);
+      a2.position.set(sd * .19, bodyY + .66, .44); a2.rotation.z = sd * .95; g.add(a2);
+    });
+  }
+  const lg = new THREE.CylinderGeometry(.042, .034, legLen, 5); lg.translate(0, -legLen / 2, 0);
+  [[-.12, .27], [.12, .27], [-.12, -.27], [.12, -.27]].forEach(q => {
+    const l = new THREE.Mesh(lg, m);
+    l.position.set(q[0], legLen + .02, q[1]); g.add(l); p.legs.push(l);
+  });
+  const tail = new THREE.Mesh(new THREE.ConeGeometry(.055, kind === 'cat' ? .52 : .22, 4), m);
+  tail.position.set(0, bodyY + .06, -.42); tail.rotation.x = kind === 'cat' ? -.85 : 1.5;
+  g.add(tail); p.tail = tail;
+  g.scale.setScalar(S);
+  return p;
+}
+
+/* かげの ひと（悪夢） */
+function makeShadow() {
+  const g = new THREE.Group();
+  const m = new THREE.MeshBasicMaterial({ color: new THREE.Color('#080510'), transparent: true, opacity: .92 });
+  const body = new THREE.Mesh(new THREE.ConeGeometry(.46, 1.55, 7), m);
+  body.position.y = .77; g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.23, 8, 7), m);
+  head.position.y = 1.62; g.add(head);
+  const eg = new THREE.SphereGeometry(.035, 6, 5);
+  const em = new THREE.MeshBasicMaterial({ color: new THREE.Color('#7a1a20'), transparent: true, opacity: .9 });
+  [-1, 1].forEach(s => { const e = new THREE.Mesh(eg, em); e.position.set(s * .085, 1.66, .19); g.add(e); });
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: TEX.glow, color: new THREE.Color('#2a0a12'), transparent: true,
+    blending: THREE.NormalBlending, depthWrite: false, opacity: .55, fog: false
+  }));
+  halo.scale.setScalar(3.6); halo.position.y = 1.0; g.add(halo);
+  return { g, m, em, halo };
+}
+
+/* ---------------------------------------------------------- 配置 */
+function spawnCast(w, cfg) {
+  const R = cfg.radius, H = w.H, rnd = mulberry32(cfg.seed + 991);
+  const cast = { people: [], animals: [], flocks: [], shadows: [], fishT: 2 };
+  w.cast = cast;
+
+  const place = (ao, rf) => {
+    const a = cfg.doorAngle + ao;
+    const x = Math.sin(a) * R * rf, z = Math.cos(a) * R * rf;
+    return new THREE.Vector3(x, H(x, z), z);
+  };
+
+  (cfg.people || []).forEach(def => {
+    const f = FIGURES[def.kind];
+    const pos = place(def.at[0], def.at[1]);
+    if (cfg.water && pos.y < cfg.water.level + .3) pos.y = cfg.water.level + .3;
+    const fig = makeFigure(f);
+    fig.g.position.copy(pos);
+    fig.g.rotation.y = Math.atan2(-pos.x, -pos.z);
+    w.group.add(fig.g);
+    /* はなしかけられる しるし */
+    const mark = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: TEX.glow, color: new THREE.Color('#fff0cc'), transparent: true,
+      blending: THREE.AdditiveBlending, depthWrite: false, opacity: .5, fog: false
+    }));
+    mark.scale.setScalar(1.1); mark.position.y = 2.05;
+    fig.g.add(mark);
+    const sh = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1),
+      new THREE.MeshBasicMaterial({ map: TEX.disc, transparent: true, depthWrite: false, color: 0x33294a, opacity: .3 }));
+    sh.rotation.x = -Math.PI / 2; sh.position.set(pos.x, pos.y + .07, pos.z);
+    w.group.add(sh);
+    cast.people.push({
+      fig, mark, pos, name: f.name, pitch: f.pitch, lines: def.lines.slice(),
+      i: 0, last: -99, ph: rnd() * TAU, face: fig.g.rotation.y, faceT: fig.g.rotation.y
+    });
+    /* つれ（いぬ など） */
+    if (def.pet) {
+      const a = makeAnimal(def.pet, def.petColor || '#e0cbb0');
+      const ap = pos.clone().add(new THREE.Vector3(1.5, 0, .8));
+      ap.y = H(ap.x, ap.z);
+      a.g.position.copy(ap);
+      w.group.add(a.g);
+      cast.animals.push({ o: a, home: ap.clone(), pos: ap, tgt: ap.clone(), sp: 0, wait: 1, kind: def.pet, tame: true, ph: rnd() * TAU, face: 0 });
+    }
+  });
+
+  (cfg.animals || []).forEach(def => {
+    for (let i = 0; i < def.n; i++) {
+      let pos = null;
+      for (let k = 0; k < 40; k++) {
+        const a = rnd() * TAU, rr = R * (.2 + rnd() * .62);
+        const x = Math.sin(a) * rr, z = Math.cos(a) * rr;
+        const y = H(x, z);
+        if (cfg.water && y < cfg.water.level + (def.kind === 'wader' ? -.4 : .8)) {
+          if (def.kind !== 'wader') continue;
+        }
+        if (def.kind === 'wader' && (!cfg.water || y > cfg.water.level + .1)) continue;
+        pos = new THREE.Vector3(x, cfg.water && def.kind === 'wader' ? cfg.water.level - .1 : y, z);
+        break;
+      }
+      if (!pos) continue;
+      const kind = def.kind === 'wader' ? 'bird' : def.kind;
+      const a = makeAnimal(kind === 'bird' ? 'dog' : kind, def.color);
+      if (def.kind === 'wader') { a.g.scale.setScalar(.42); }
+      a.g.position.copy(pos);
+      w.group.add(a.g);
+      cast.animals.push({
+        o: a, home: pos.clone(), pos, tgt: pos.clone(), sp: 0, wait: rnd() * 4,
+        kind: def.kind, shy: def.shy, tame: def.tame, ph: rnd() * TAU, face: rnd() * TAU
+      });
+    }
+  });
+
+  /* とりの むれ */
+  if (cfg.flock) {
+    for (let f = 0; f < cfg.flock.groups; f++) {
+      const grp = new THREE.Group();
+      const birds = [];
+      for (let i = 0; i < cfg.flock.n; i++) {
+        const b = makeAnimal('bird', cfg.flock.color);
+        b.g.position.set((rnd() - .5) * 9, (rnd() - .5) * 3.5, (rnd() - .5) * 9);
+        b.g.scale.setScalar(.7 + rnd() * .5);
+        grp.add(b.g); birds.push(b);
+      }
+      const a = rnd() * TAU;
+      grp.position.set(Math.sin(a) * R * .4, 22 + rnd() * 16, Math.cos(a) * R * .4);
+      w.group.add(grp);
+      cast.flocks.push({ grp, birds, r: 24 + rnd() * 22, ph: rnd() * TAU, sp: .13 + rnd() * .1, y0: grp.position.y });
+    }
+  }
+
+  /* かげの ひと */
+  if (cfg.shadows) {
+    for (let i = 0; i < cfg.shadows; i++) {
+      const a = rnd() * TAU, rr = R * (.35 + rnd() * .45);
+      const s = makeShadow();
+      const pos = new THREE.Vector3(Math.sin(a) * rr, 0, Math.cos(a) * rr);
+      pos.y = H(pos.x, pos.z);
+      s.g.position.copy(pos);
+      w.group.add(s.g);
+      cast.shadows.push({ o: s, pos, sp: .95 + rnd() * .55, ph: rnd() * TAU, wake: 0 });
+    }
+  }
+  return cast;
+}
+
+/* ---------------------------------------------------------- 更新 */
+function updateCast(w, dt) {
+  const cast = w.cast;
+  if (!cast) return;
+  const t = w.t;
+
+  /* ひと */
+  cast.people.forEach(n => {
+    const d = Math.hypot(PL.pos.x - n.pos.x, PL.pos.z - n.pos.z);
+    if (d < 12) n.faceT = Math.atan2(PL.pos.x - n.pos.x, PL.pos.z - n.pos.z);
+    n.face = lerpAngle(n.face, n.faceT, 1 - Math.exp(-dt * 2.2));
+    n.fig.g.rotation.y = n.face;
+    const br = Math.sin(t * 1.1 + n.ph) * .5 + .5;
+    n.fig.body.scale.y = 1 + br * .022;
+    n.fig.armL.rotation.x = Math.sin(t * .8 + n.ph) * .07;
+    n.fig.armR.rotation.x = -Math.sin(t * .8 + n.ph) * .07;
+    n.fig.head.position.y = 1.30 + Math.sin(t * 1.1 + n.ph) * .012;
+    const left = n.i < n.lines.length;
+    if (n.mark && n.mark.material && n.mark.material.opacity !== undefined) {
+      n.mark.material.opacity = left ? (.30 + .28 * (Math.sin(t * 2.1 + n.ph) * .5 + .5)) : 0;
+      n.mark.position.y = 2.05 + Math.sin(t * 1.4 + n.ph) * .07;
+    }
+  });
+
+  /* けもの */
+  cast.animals.forEach(a => {
+    const dp = Math.hypot(PL.pos.x - a.pos.x, PL.pos.z - a.pos.z);
+    let want = null;
+    if (a.shy && dp < 9) {
+      const dx = a.pos.x - PL.pos.x, dz = a.pos.z - PL.pos.z, l = Math.hypot(dx, dz) || 1;
+      want = new THREE.Vector3(a.pos.x + dx / l * 8, 0, a.pos.z + dz / l * 8);
+    } else if (a.tame && dp < 16 && dp > 2.4) {
+      /* よこに ならんで あるく */
+      const sx = Math.cos(PL.face), sz = -Math.sin(PL.face);
+      want = new THREE.Vector3(PL.pos.x + sx * 1.9, 0, PL.pos.z + sz * 1.9);
+    }
+    if (want) { a.tgt.copy(want); a.wait = 0; }
+    a.wait -= dt;
+    const d = Math.hypot(a.tgt.x - a.pos.x, a.tgt.z - a.pos.z);
+    if (d < .8) {
+      a.sp = lerp(a.sp, 0, 1 - Math.exp(-dt * 4));
+      if (a.wait <= 0) {
+        const ang = Math.random() * TAU, rad = 3 + Math.random() * 9;
+        a.tgt.set(a.home.x + Math.sin(ang) * rad, 0, a.home.z + Math.cos(ang) * rad);
+        a.wait = 2 + Math.random() * 6;
+      }
+    } else {
+      const goal = (a.shy && dp < 9) ? 3.3 : 1.25;
+      a.sp = lerp(a.sp, goal, 1 - Math.exp(-dt * 2.4));
+      const dx = (a.tgt.x - a.pos.x) / d, dz = (a.tgt.z - a.pos.z) / d;
+      a.pos.x += dx * a.sp * dt; a.pos.z += dz * a.sp * dt;
+      a.face = lerpAngle(a.face, Math.atan2(dx, dz), 1 - Math.exp(-dt * 5));
+    }
+    if (a.kind !== 'wader') a.pos.y = w.H(a.pos.x, a.pos.z);
+    a.o.g.position.copy(a.pos);
+    a.o.g.rotation.y = a.face;
+    a.ph += a.sp * dt * 7;
+    const sw = Math.sin(a.ph);
+    a.o.legs.forEach((l, i) => { l.rotation.x = sw * .55 * (i % 2 ? -1 : 1) * Math.min(a.sp, 1.6); });
+    if (a.o.tail) a.o.tail.rotation.z = Math.sin(t * 3 + a.ph) * .22;
+    a.o.g.position.y += Math.abs(Math.cos(a.ph)) * .03 * a.sp;
+  });
+
+  /* とりの むれ */
+  cast.flocks.forEach(f => {
+    f.ph += dt * f.sp;
+    f.grp.position.x += Math.cos(f.ph) * f.r * f.sp * dt;
+    f.grp.position.z -= Math.sin(f.ph) * f.r * f.sp * dt;
+    f.grp.position.y = f.y0 + Math.sin(f.ph * .7) * 2.5;
+    f.grp.rotation.y = -f.ph + Math.PI / 2;
+    f.birds.forEach((b, i) => {
+      const a = Math.sin(t * 7.5 + i * .9) * .8;
+      b.wl.rotation.z = -a; b.wr.rotation.z = a;
+    });
+  });
+
+  /* さかな が はねる */
+  if (w.cfg && w.cfg.water && w.cfg.water.fish) {
+    cast.fishT -= dt;
+    if (cast.fishT <= 0) {
+      cast.fishT = 4 + Math.random() * 8;
+      spawnFish(w);
+    }
+  }
+  if (cast.jumping) {
+    for (let i = cast.jumping.length - 1; i >= 0; i--) {
+      const j = cast.jumping[i];
+      j.t += dt;
+      const k = j.t / j.dur;
+      j.o.g.position.y = j.y0 + Math.sin(k * Math.PI) * j.h;
+      j.o.g.position.x = j.x0 + j.vx * j.t;
+      j.o.g.position.z = j.z0 + j.vz * j.t;
+      j.o.g.rotation.x = -Math.cos(k * Math.PI) * .9;
+      j.o.g.rotation.y = j.dir;
+      if (k >= 1) {
+        burst(new THREE.Vector3(j.o.g.position.x, j.y0, j.o.g.position.z), '#dff2ff');
+        SFX.plink();
+        w.group.remove(j.o.g);
+        disposeObj(j.o.g);
+        cast.jumping.splice(i, 1);
+      }
+    }
+  }
+}
+
+function spawnFish(w) {
+  const cfg = w.cfg, wl = cfg.water.level;
+  let spot = null;
+  for (let k = 0; k < 50; k++) {
+    const a = Math.random() * TAU, r = cfg.radius * (.15 + Math.random() * .6);
+    const x = PL.pos.x + Math.cos(a) * (8 + Math.random() * 22);
+    const z = PL.pos.z + Math.sin(a) * (8 + Math.random() * 22);
+    if (w.H(x, z) < wl - 1.2) { spot = [x, z]; break; }
+  }
+  if (!spot) return;
+  const f = makeAnimal('fish', cfg.water.shallow);
+  f.g.position.set(spot[0], wl, spot[1]);
+  w.group.add(f.g);
+  const dir = Math.random() * TAU;
+  if (!w.cast.jumping) w.cast.jumping = [];
+  w.cast.jumping.push({
+    o: f, t: 0, dur: 1.0, h: 1.5 + Math.random(), y0: wl - .1,
+    x0: spot[0], z0: spot[1], vx: Math.sin(dir) * 1.1, vz: Math.cos(dir) * 1.1, dir
+  });
+  SFX.plink();
+}
+
+/* ---------------------------------------------------------- 会話 */
+function updateTalk(dt) {
+  const cast = W.cast;
+  if (!cast || G.state !== 'play') return;
+  cast.people.forEach(n => {
+    const d = Math.hypot(PL.pos.x - n.pos.x, PL.pos.z - n.pos.z);
+    if (d < 3.6 && n.i < n.lines.length && G.t - n.last > 3.6) {
+      n.last = G.t;
+      say(n.lines[n.i], 5600, n.name);
+      SFX.talk(n.pitch + (n.i % 2 ? 5 : 0));
+      n.i++;
+      if (n.i >= n.lines.length) G.metPeople++;
+    }
+  });
+}
+
+/* ---------------------------------------------------------- 悪夢 */
+function updateNightmare(w, dt) {
+  const cast = w.cast;
+  if (!cast || !cast.shadows.length) return;
+  let near = 999;
+  cast.shadows.forEach(s => {
+    const dx = PL.pos.x - s.pos.x, dz = PL.pos.z - s.pos.z;
+    const d = Math.hypot(dx, dz);
+    near = Math.min(near, d);
+    /* ゆっくり ついてくる。ふれることは ない */
+    if (d > 4.6 && d < 70) {
+      const k = s.sp * dt * (d > 22 ? 1.5 : 1);
+      s.pos.x += dx / d * k; s.pos.z += dz / d * k;
+    }
+    s.pos.y = w.H(s.pos.x, s.pos.z);
+    s.o.g.position.copy(s.pos);
+    s.o.g.position.y += Math.sin(w.t * 1.3 + s.ph) * .10;
+    s.o.g.rotation.y = Math.atan2(dx, dz);
+    const fade = 1 - smoothstep(26, 46, d);
+    s.o.m.opacity = .92 * fade;
+    s.o.em.opacity = .9 * fade;
+    s.o.halo.material.opacity = .5 * fade;
+    s.o.g.visible = fade > .02;
+  });
+
+  /* こわさ : ちかいほど 世界が しずむ */
+  const fear = clamp(1 - (near - 4.5) / 15, 0, 1);
+  G.fear = lerp(G.fear, fear, 1 - Math.exp(-dt * 2.2));
+  const el = document.getElementById('dread');
+  if (el) el.style.opacity = (G.fear * .70).toFixed(3);
+
+  /* こどう : ちかいほど はやく */
+  G.heartT -= dt * (0.55 + G.fear * 1.9);
+  if (G.heartT <= 0) {
+    G.heartT = 1.25;
+    SFX.heart(.5 + G.fear * .75);
+  }
+  /* ささやき */
+  G.whisT -= dt;
+  if (G.whisT <= 0) {
+    G.whisT = 5 + Math.random() * 8 - G.fear * 3;
+    if (G.fear > .22) {
+      SFX.whisper();
+      if (Math.random() < .55) {
+        const w2 = NIGHT_WHISPERS[(Math.random() * NIGHT_WHISPERS.length) | 0];
+        say(w2, 3200, '　');
+      }
+    }
+  }
+  /* カメラが すこし ふるえる */
+  if (G.fear > .35 && camera) {
+    const s = (G.fear - .35) * .10;
+    camera.position.x += (Math.random() - .5) * s;
+    camera.position.y += (Math.random() - .5) * s;
+  }
+}
+
+const NIGHT_WHISPERS = [
+  'まだ おぼえてる',
+  'おいて きたね',
+  'もどれないよ',
+  'なぜ あるくの',
+  'ここに いれば いい',
+  'わすれたの?'
+];
+
+/* 悪夢のとちゅうで 一度だけ おきる こと */
+function nightmareBeat() {
+  if (!W || !W.cast || !W.cast.shadows.length) return;
+  const back = new THREE.Vector3(-Math.sin(IN.yaw), 0, -Math.cos(IN.yaw));
+  const s = W.cast.shadows[0];
+  s.pos.set(PL.pos.x + back.x * 7.5, 0, PL.pos.z + back.z * 7.5);
+  s.pos.y = W.H(s.pos.x, s.pos.z);
+  SFX.sting();
+  MUS.duckHard(2.4);
+  say('うしろに、だれか いる。', 3400);
+}
 </script>
 <script>
 /* three.js を CDN から読み込む（順に試す） */
