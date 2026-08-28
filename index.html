@@ -565,6 +565,18 @@ const LH = {
     }
     if (c.inten > .78 && lb === 2) out.push({ m: Math.max(ch.m[0] - 12, LOWCAP), t: 0, d: 2, v: .19 });
   },
+  /* ワルツ : ともしびの まち（3拍子） */
+  waltz(ch, lb, out, c) {
+    const L = ch.m.length;
+    if (lb % 3 === 0) {
+      out.push({ m: Math.max(ch.m[0] - 12, LOWCAP), t: 0, d: 2.7, v: .30 });
+      if (c.inten > .7) out.push({ m: ch.m[1 % L], t: .5, d: 1.2, v: .12 });
+    } else {
+      out.push({ m: ch.m[1 % L], t: 0, d: 1.5, v: .175 });
+      out.push({ m: ch.m[2 % L], t: 0, d: 1.5, v: .150 });
+      if (c.rnd() < .55) out.push({ m: ch.m[3 % L], t: 0, d: 1.5, v: .120 });
+    }
+  },
   /* しのびよる : わすれられた夢 */
   creep(ch, lb, out, c) {
     const L = ch.m.length;
@@ -695,6 +707,48 @@ const TRACKS = {
       ['F5', 28, 2, .60], ['E5', 30, 1, .55], ['D5', 31, 1, .55]
     ],
     harmony: true    /* 高揚すると内声のハモリが加わる */
+  },
+
+  /* 7. 夕暮れのまち：なつかしい 3拍子のワルツ */
+  town: {
+    name: 'まちの あかり', bpm: 84, beats: 48, lh: 'waltz', rev: .48, spark: .11,
+    vars: [0, 1, 0, 2, 0, 3],
+    chords: [
+      { b: 0, m: ['G2', 'D3', 'B3', 'D4'] },
+      { b: 3, m: ['E2', 'B2', 'G3', 'D4'] },
+      { b: 6, m: ['C3', 'G3', 'E4', 'G4'] },
+      { b: 9, m: ['D3', 'A3', 'D4', 'F#4'] },
+      { b: 12, m: ['B2', 'D3', 'G3', 'B3'] },
+      { b: 15, m: ['A2', 'E3', 'C4', 'G4'] },
+      { b: 18, m: ['C3', 'G3', 'B3', 'E4'] },
+      { b: 21, m: ['D3', 'A3', 'D4', 'F#4'] },
+      { b: 24, m: ['E2', 'B2', 'E3', 'G3'] },
+      { b: 27, m: ['C3', 'G3', 'E4', 'G4'] },
+      { b: 30, m: ['B2', 'D3', 'G3', 'B3'] },
+      { b: 33, m: ['A2', 'E3', 'C4', 'G4'] },
+      { b: 36, m: ['C3', 'G3', 'B3', 'E4'] },
+      { b: 39, m: ['B2', 'F#3', 'A3', 'D4'] },
+      { b: 42, m: ['A2', 'E3', 'C4', 'G4'] },
+      { b: 45, m: ['D3', 'A3', 'C4', 'G4'] }
+    ],
+    melody: [
+      ['D5', 0, 1, .50], ['G5', 1, 2, .60],
+      ['F#5', 3, 1, .50], ['E5', 4, 2, .55],
+      ['E5', 6, 1, .50], ['G5', 7, 1, .55], ['B5', 8, 1, .60],
+      ['A5', 9, 2, .55], ['G5', 11, 1, .50],
+      ['B5', 12, 1, .55], ['A5', 13, 1, .50], ['G5', 14, 1, .50],
+      ['E5', 15, 2, .50], ['D5', 17, 1, .45],
+      ['E5', 18, 1, .50], ['G5', 19, 1, .55], ['B5', 20, 1, .50],
+      ['A5', 21, 2, .55], ['D5', 23, 1, .45],
+      ['B5', 24, 2, .55], ['A5', 26, 1, .50],
+      ['G5', 27, 2, .55], ['E5', 29, 1, .50],
+      ['D5', 30, 1, .50], ['G5', 31, 2, .60],
+      ['E5', 33, 2, .50], ['C5', 35, 1, .45],
+      ['E5', 36, 1, .50], ['G5', 37, 1, .55], ['A5', 38, 1, .50],
+      ['B5', 39, 2, .55], ['A5', 41, 1, .50],
+      ['G5', 42, 1, .50], ['E5', 43, 2, .50],
+      ['D5', 45, 3, .50]
+    ]
   },
 
   /* 6. 中盤の悪夢：こわれたピアノ、三全音と半音のきしみ */
@@ -972,6 +1026,13 @@ const SFX = {
     AU.note(m, AU.now() + .005, .09, .055 + Math.random() * .02,
       { rev: .12, damp: true, soft: 1, pan: this.stepFlip ? -.16 : .16 });
   },
+  /* まどに あかりが ともる */
+  window(i) {
+    if (!AU.ready) return;
+    const t = AU.now() + .01, b = [79, 83, 86, 88, 91][i % 5];
+    AU.note(b, t, 1.6, .20, { rev: .7, soft: 1, pan: (Math.random() - .5) * .6 });
+    AU.note(b + 7, t + .07, 1.4, .12, { rev: .75, soft: 1, pan: (Math.random() - .5) * .6 });
+  },
   /* UI */
   ui(up) {
     if (!AU.ready) return;
@@ -1066,7 +1127,8 @@ const CHAPTERS = [
       {
         kind: 'child', at: [2.5, .34], pet: 'dog', petColor: '#e8d3b4',
         lines: ['ここで ずっと まってるんだ。', 'だれを まってるの? って?',
-          'じぶんでも、わすれちゃった。', 'でも まってるの、きらいじゃないよ。']
+          'じぶんでも、わすれちゃった。', 'でも まってるの、きらいじゃないよ。',
+          'まってると、あるいてる ひとに あえるから。']
       },
       {
         kind: 'hat', at: [-1.9, .58],
@@ -1102,7 +1164,8 @@ const CHAPTERS = [
       {
         kind: 'water', at: [1.15, .52],
         lines: ['みずに うつるものを、ずっと みていた。', 'なくしたものが、そこに いるきが して。',
-          'でも、すくおうとすると きえるんだ。', 'きみは、まだ すくえるものを もっている?']
+          'でも、すくおうとすると きえるんだ。', 'きみは、まだ すくえるものを もっている?',
+          'いいんだ。もっていって。わたしのぶんも。']
       },
       {
         kind: 'girl', at: [-1.0, .40],
@@ -1121,7 +1184,47 @@ const CHAPTERS = [
     ]
   },
   {
-    no: '三', title: 'わすれられた夢', cap: 'とじた とびらの うら',
+    no: '三', title: 'ともしびの まち', cap: 'あかりが ひとつずつ ともる',
+    bgm: 'town', bgmLevel: 1.1, lanterns: 4, radius: 68, seed: 51503, doorAngle: 1.7, variant: 2,
+    town: 13,
+    townPal: {
+      wall: ['#d8c6ae', '#c9b8a4', '#e0cdb4', '#bfae9c'], roof: ['#8a6a68', '#6f5f74', '#96706a', '#7a6a80'],
+      door: '#6a5348', stone: '#a89c92', wood: '#7a6656', winOff: '#4a4250', winOn: '#ffd79a'
+    },
+    sky: { top: '#3f4a86', mid: '#94809f', bot: '#f2b489', sun: '#ffcf9c', sunDir: [-.82, .07, -.56], pow: 70 },
+    fog: { color: '#9d8ba4', density: .0150 },
+    ground: { grass: '#8b9184', grass2: '#a6a597', dry: '#bfae95', rock: '#767a80', amp: 4.2 },
+    tree: { count: 34, foliage: ['#4e5f74', '#5f6f84', '#7d6f86'], trunk: '#4a4450', h: [3.0, 5.2] },
+    flower: { count: 170, colors: ['#ffd9a8', '#e8d0e4', '#fdf0d8'] },
+    rock: { count: 14, color: '#5c6470' },
+    mote: { count: 220, color: '#ffdcae', size: .5, rise: .2, spread: 52 },
+    cloud: 6, water: null,
+    light: { hemiSky: '#d8bacb', hemiGround: '#565466', dir: '#ffc898', dirInt: 1.45, amb: .52 },
+    lantern: '#ffe0a8', birdCall: 22,
+    people: [
+      {
+        kind: 'keeper', at: [.55, .40],
+        lines: ['この まちには、とびらが おおい。', 'とびらは、だれかが つくるんじゃない。',
+          '「いきたい」と おもった ばしょに、ひとりでに できる。',
+          'ここの ひとは、みんな じぶんの とびらを とじた。',
+          'わるいことじゃ ないよ。ここが すきなんだ。']
+      },
+      {
+        kind: 'townboy', at: [-1.5, .34],
+        lines: ['よるに なると、あかりが ひとつずつ つくんだ。', 'まどの かずだけ、まってる ひとが いるんだって。',
+          'ぼくの まどは、まだ くらいまま。', 'ともして くれる?']
+      }
+    ],
+    animals: [{ kind: 'cat', n: 2, color: '#d8cfc4' }, { kind: 'dog', n: 1, color: '#c9b49a' }],
+    lines: [
+      'まどの おくに、だれかの ゆうげが ある。',
+      'ここで とまる ひとの きもちが、すこし わかる。',
+      'あかりが ふえるほど、よるが やさしくなる。',
+      'それでも わたしは、まだ あるくらしい。'
+    ]
+  },
+  {
+    no: '四', title: 'わすれられた夢', cap: 'とじた とびらの うら',
     bgm: 'nightmare', bgmLevel: 1.15, lanterns: 4, radius: 62, seed: 66613, doorAngle: 2.6, variant: 4,
     nightmare: true,
     sky: { top: '#120c18', mid: '#2a1220', bot: '#4a1c22', sun: '#5e1c1c', sunDir: [.3, -.05, -.95], pow: 16, i: .30 },
@@ -1134,6 +1237,14 @@ const CHAPTERS = [
     cloud: 0, water: null, shadows: 6,
     light: { hemiSky: '#5e3745', hemiGround: '#1c1220', dir: '#8e2830', dirInt: .60, amb: .34 },
     lantern: '#ff9a6a',
+    people: [
+      {
+        kind: 'past', at: [-.95, .44],
+        lines: ['あるくのを やめようと おもったこと、ある?',
+          'わたしは、ここで やめたんだ。', 'くらいけど、もう つかれないよ。',
+          'きみは、まだ あるける?', '……そう。いってらっしゃい。']
+      }
+    ],
     lines: [
       'ここは、とじた とびらの うら。',
       'おいてきたものは、きえてなんか いなかった。',
@@ -1142,7 +1253,7 @@ const CHAPTERS = [
     ]
   },
   {
-    no: '四', title: 'ゆうぐれの おか', cap: 'そらが いろを かえる ころ',
+    no: '五', title: 'ゆうぐれの おか', cap: 'ゆめから でたら、まだ そらが あった',
     bgm: 'dusk', lanterns: 5, radius: 90, seed: 991733, doorAngle: 1.0, variant: 2,
     sky: { top: '#5b5f9c', mid: '#d089a4', bot: '#ffc186', sun: '#ffd9a0', sunDir: [.86, .10, .50], pow: 60 },
     fog: { color: '#d3a0aa', density: .0135 },
@@ -1158,7 +1269,8 @@ const CHAPTERS = [
       {
         kind: 'granny', at: [-1.25, .46],
         lines: ['わたしも、たくさんの とびらを あけたよ。', 'こわくて、あけられなかった とびらもある。',
-          'あの ゆめの ばしょ、とおってきたのね。', 'だいじょうぶ。ぜんぶ、あなたの ものよ。']
+          'あの ゆめの ばしょ、とおってきたのね。', 'あそこに いた あの子は、あなた だったでしょう。',
+          'おいてきて いいの。うらまないから。', 'だいじょうぶ。ぜんぶ、あなたの ものよ。']
       },
       {
         kind: 'hat', at: [1.6, .60],
@@ -1177,7 +1289,7 @@ const CHAPTERS = [
     ]
   },
   {
-    no: '五', title: 'さいごの かいだん', cap: 'ひかりの みちを ゆく',
+    no: '六', title: 'さいごの かいだん', cap: 'ひかりの みちを ゆく',
     bgm: 'dusk', bgmIntensity: .34, bgmLevel: 1.1, lanterns: 0, radius: 74, seed: 30301, doorAngle: 0, variant: 3,
     sky: { top: '#232a52', mid: '#4b5088', bot: '#9d90bb', sun: '#dfe4ff', sunDir: [0, .34, -1], pow: 40 },
     fog: { color: '#3d4274', density: .0165 },
@@ -1190,10 +1302,19 @@ const CHAPTERS = [
     light: { hemiSky: '#a6b0ea', hemiGround: '#3c4070', dir: '#c9d2ff', dirInt: .55, amb: .34 },
     lantern: '#dfe8ff',
     animals: [{ kind: 'cat', n: 1, color: '#eae4f2', tame: true }],
+    people: [
+      {
+        kind: 'hat', at: [.09, .57],
+        lines: ['やっぱり、きたね。', 'ぼくは ここで まつことに したよ。',
+          'つぎの ひとが とおるまで。', 'あの まちの あかりみたいに ね。',
+          'いってらっしゃい。']
+      }
+    ],
     lines: [],
     walkLines: [
       'ながい たびだった。',
       'ねこが、ついてきている。',
+      'あの まちの あかりは、まだ ついているだろうか。',
       'もっていたものは、ぜんぶ ひかりに なった。',
       'このさきは、あさの いろ。'
     ]
@@ -1205,6 +1326,7 @@ const ENDING_LINES = [
   'であった ひとたちは、\nみんな なにかを まっていた。',
   'まつことも、たびの ひとつ\nだったのかもしれない。',
   'こわかった よるも、\nいまは とおい あかりに みえる。',
+  'あの まちの まどは、\nきっと まだ ともっている。',
   'さいごに のこったのは、\nあるいた、ということ だけ。',
   'またね、と いえる くらいには、\nやさしく なれた だろうか。'
 ];
@@ -1492,6 +1614,7 @@ function buildWorld(cfg) {
   }
 
   const flats = [{ x: doorPos.x, z: doorPos.z, r: 7, soft: 12 }, { x: spawn.x, z: spawn.z, r: 5, soft: 10 }];
+  if (cfg.town) flats.push({ x: 0, z: 0, r: 21, soft: 15 });
   if (cfg.path) {
     for (let i = 0; i <= 12; i++) {
       const p = spawn.clone().lerp(doorPos, i / 12);
@@ -1566,6 +1689,7 @@ function buildWorld(cfg) {
       if (Math.hypot(dx, dz) > .85) continue;
       if (Math.hypot(x - doorPos.x, z - doorPos.z) < 12) continue;
       if (Math.hypot(x - spawn.x, z - spawn.z) < 9) continue;
+      if (cfg.town && Math.hypot(x, z) < 25) continue;
       let ok = true;
       for (const s of lanternSpots) if (Math.hypot(x - s.x, z - s.z) < 6) { ok = false; break; }
       if (!ok) continue;
@@ -1619,6 +1743,7 @@ function buildWorld(cfg) {
     for (let i = 0; i < cfg.rock.count; i++) {
       const a = rnd() * TAU, rr = R * (.15 + Math.sqrt(rnd()) * .8);
       const x = Math.sin(a) * rr, z = Math.cos(a) * rr, y = H(x, z);
+      if (cfg.town && Math.hypot(x, z) < 24) continue;
       q.setFromEuler(new THREE.Euler(rnd(), rnd() * TAU, rnd()));
       const s = .5 + rnd() * 1.5;
       m4.compose(new THREE.Vector3(x, y - s * .25, z), q, new THREE.Vector3(s * 1.3, s * .8, s));
@@ -1655,7 +1780,10 @@ function buildWorld(cfg) {
     w.group.add(fi);
   }
 
-  /* ---- floating rocks (ch3) ---- */
+  /* ---- まち ---- */
+  if (cfg.town) buildTown(w, cfg);
+
+  /* ---- floating rocks ---- */
   if (cfg.floaters) {
     w.floaters = [];
     const rg = new THREE.IcosahedronGeometry(1, 0);
@@ -2163,6 +2291,8 @@ function collect(l, idx) {
     orb.sp.material.opacity = 1;
     TL.run([{ d: 1.2, upd: k => { orb.ha.material.opacity = k * .9; orb.ha.scale.setScalar(1.5 + k * 1.4); } }]);
   }
+  if (cfg.town) lightTown(Math.ceil(cfg.town / cfg.lanterns));
+
   /* 光の粒が飛び散る */
   burst(l.pos.clone().setY(l.pos.y + 1.5), cfg.lantern);
   TL.run([{
@@ -2419,7 +2549,7 @@ function buildEndingWorld() {
 
   /* あるいてきた とびらたち */
   w.doors = [];
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 6; i++) {
     const dcfg = { stars: false, lantern: '#ffe9c0' };
     const dz = -(38 + i * 34);
     const dx = Math.sin(i * 1.9) * (5 + i * 3.6);
@@ -2431,7 +2561,7 @@ function buildEndingWorld() {
 
   /* であった ひとたち が、とびらの そばに たっている */
   w.cast = { people: [], animals: [], flocks: [], shadows: [] };
-  const CASTLIST = [['child', 'dog'], ['hat', null], ['water', null], ['girl', null], ['granny', null]];
+  const CASTLIST = [['child', 'dog'], ['hat', null], ['water', null], ['keeper', null], ['girl', null], ['granny', null]];
   w.doors.forEach((dd, i) => {
     const c = CASTLIST[i]; if (!c) return;
     const f = FIGURES[c[0]];
@@ -2642,7 +2772,7 @@ function updatePlayer(dt) {
     const iv = .46;
     if (PL.stepT > iv) {
       PL.stepT = 0;
-      const root = [60, 57, 56, 62, 62][G.ch] || 60;
+      const root = [60, 57, 55, 56, 62, 62][G.ch] || 60;
       SFX.step(root);
     }
   }
@@ -2738,6 +2868,11 @@ function updateWorld(dt) {
     f.p += dt * .35;
     f.m.position.y = f.y0 + Math.sin(f.p) * 1.1;
     f.m.rotation.y += dt * .06;
+  });
+
+  /* まちの あかり */
+  if (W.lamps) W.lamps.forEach(l => {
+    l.gl.material.opacity = .48 + .12 * Math.sin(W.t * 1.6 + l.ph);
   });
 
   /* lanterns */
@@ -2949,7 +3084,10 @@ const FIGURES = {
   hat:    { name: 'ぼうしの ひと', scale: 1.02, cloth: '#cfd8e8', hair: '#3f3a44', hat: '#b3a189', pitch: 67 },
   water:  { name: 'みずべの ひと', scale: .98, cloth: '#d8cfe4', hair: '#4a4450', sit: true, pitch: 63 },
   girl:   { name: 'ちいさな こ',   scale: .66, cloth: '#f8c8d4', hair: '#5a4048', pitch: 79 },
-  granny: { name: 'おばあさん',    scale: .84, cloth: '#e6dcc8', hair: '#ece8e2', bend: .22, cane: true, pitch: 58 }
+  granny: { name: 'おばあさん',    scale: .84, cloth: '#e6dcc8', hair: '#ece8e2', bend: .22, cane: true, pitch: 58 },
+  keeper: { name: 'とびらの ばんにん', scale: 1.14, cloth: '#6f6a88', hair: '#38343f', hat: '#4e4a62', pitch: 53 },
+  townboy:{ name: 'まちの こ',      scale: .72, cloth: '#e8cfa4', hair: '#493a32', pitch: 74 },
+  past:   { name: 'むかしの わたし', scale: 1.00, cloth: '#7a7c86', hair: '#3f3640', cape: '#7f6670', sit: true, pitch: 62 }
 };
 
 /* ひとの すがた（からだの つくり） */
@@ -3078,6 +3216,168 @@ function makeShadow() {
   }));
   halo.scale.setScalar(3.6); halo.position.y = 1.0; g.add(halo);
   return { g, m, em, halo };
+}
+
+/* ---------------------------------------------------------- まち */
+function makeHouse(rnd, pal) {
+  const g = new THREE.Group();
+  const w = 2.5 + rnd() * 1.5, d = 2.7 + rnd() * 1.4, h = 1.9 + rnd() * 1.2;
+  const wallM = PHONG(pal.wall[(rnd() * pal.wall.length) | 0]);
+  const roofM = PHONG(pal.roof[(rnd() * pal.roof.length) | 0]);
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallM);
+  wall.position.y = h / 2; g.add(wall);
+  const rh = 1.2 + rnd() * .8;
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(Math.max(w, d) * .78, rh, 4), roofM);
+  roof.rotation.y = Math.PI / 4; roof.position.y = h + rh / 2 - .06; g.add(roof);
+  if (rnd() < .45) {
+    const ch = new THREE.Mesh(new THREE.BoxGeometry(.28, .8, .28), roofM);
+    ch.position.set(w * .26, h + rh * .55, -d * .18); g.add(ch);
+  }
+  const doorM = PHONG(pal.door);
+  const dr = new THREE.Mesh(new THREE.BoxGeometry(.62, 1.05, .1), doorM);
+  dr.position.set(0, .53, d / 2 + .02); g.add(dr);
+
+  /* まど : あとで ともる */
+  const winM = new THREE.MeshBasicMaterial({ color: new THREE.Color(pal.winOff) });
+  const wins = [];
+  const wg = new THREE.PlaneGeometry(.46, .52);
+  [[-w * .28, h * .62, d / 2 + .03, 0], [w * .28, h * .62, d / 2 + .03, 0],
+  [w / 2 + .03, h * .60, 0, Math.PI / 2], [-w / 2 - .03, h * .60, 0, -Math.PI / 2]].forEach((q, i) => {
+    if (i > 1 && rnd() < .45) return;
+    const m = new THREE.Mesh(wg, winM);
+    m.position.set(q[0], q[1], q[2]); m.rotation.y = q[3];
+    g.add(m); wins.push(m);
+  });
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: TEX.glow, color: new THREE.Color(pal.winOn), transparent: true,
+    blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0, fog: false
+  }));
+  glow.scale.setScalar(6.5); glow.position.set(0, h * .62, d / 2 + .5);
+  g.add(glow);
+  return { g, winM, glow, lit: false, w, d, h };
+}
+
+function buildTown(w, cfg) {
+  const rnd = mulberry32(cfg.seed + 4242), H = w.H;
+  const pal = cfg.townPal;
+  w.houses = [];
+  const n = cfg.town;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * TAU + rnd() * .32;
+    const rr = 9.5 + rnd() * 10.5;
+    const x = Math.sin(a) * rr, z = Math.cos(a) * rr;
+    const y = H(x, z);
+    const ho = makeHouse(rnd, pal);
+    ho.g.position.set(x, y - .05, z);
+    ho.g.rotation.y = Math.atan2(-x, -z) + (rnd() - .5) * .5;
+    w.group.add(ho.g);
+    /* 影 */
+    const sh = new THREE.Mesh(new THREE.PlaneGeometry(ho.w * 1.9, ho.d * 1.9),
+      new THREE.MeshBasicMaterial({ map: TEX.disc, transparent: true, depthWrite: false, color: 0x241c30, opacity: .34 }));
+    sh.rotation.x = -Math.PI / 2; sh.position.set(x, y + .06, z);
+    w.group.add(sh);
+    w.houses.push(ho);
+  }
+
+  /* いど */
+  const stoneM = PHONG(pal.stone);
+  const well = new THREE.Group();
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.15, .75, 10), stoneM);
+  ring.position.y = .38; well.add(ring);
+  const hole = new THREE.Mesh(new THREE.CircleGeometry(.82, 10),
+    new THREE.MeshBasicMaterial({ color: new THREE.Color('#1a1622') }));
+  hole.rotation.x = -Math.PI / 2; hole.position.y = .77; well.add(hole);
+  [-1, 1].forEach(sd => {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(.14, 1.7, .14), PHONG(pal.wood));
+    post.position.set(sd * .95, 1.2, 0); well.add(post);
+  });
+  const beam = new THREE.Mesh(new THREE.BoxGeometry(2.4, .16, .3), PHONG(pal.wood));
+  beam.position.y = 2.02; well.add(beam);
+  well.position.set(0, H(0, 0), 0);
+  w.group.add(well);
+
+  /* ひろばの いしだたみ */
+  {
+    const pg = new THREE.CircleGeometry(1.0, 8); pg.rotateX(-Math.PI / 2);
+    const stones = [];
+    for (let i = 0; i < 120; i++) {
+      const a = rnd() * TAU, rr = Math.sqrt(rnd()) * 19;
+      const x = Math.sin(a) * rr, z = Math.cos(a) * rr;
+      stones.push([x, H(x, z) + .05, z, .7 + rnd() * 1.05, rnd() * TAU]);
+    }
+    /* instanceColor は マテリアル色に かかるので 白で つくる */
+    const sm = new THREE.MeshPhongMaterial({ shininess: 0, specular: 0x000000, flatShading: true });
+    const si = new THREE.InstancedMesh(pg, sm, stones.length);
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), cc = new THREE.Color();
+    const base = new THREE.Color(pal.stone);
+    stones.forEach((st, i) => {
+      q.setFromEuler(new THREE.Euler(0, st[4], 0));
+      m4.compose(new THREE.Vector3(st[0], st[1], st[2]), q, new THREE.Vector3(st[3], 1, st[3] * .9));
+      si.setMatrixAt(i, m4);
+      cc.copy(base).offsetHSL(0, 0, .06 + (rnd() - .5) * .12);
+      si.setColorAt(i, cc);
+    });
+    si.instanceMatrix.needsUpdate = true;
+    if (si.instanceColor) si.instanceColor.needsUpdate = true;
+    w.group.add(si);
+  }
+
+  /* みちの あかり */
+  w.lamps = [];
+  const spawn = w.spawn, dp = w.door ? w.door.pos : new THREE.Vector3();
+  for (let i = 0; i <= 7; i++) {
+    const k = i / 7;
+    const p = new THREE.Vector3().lerpVectors(spawn, dp, k);
+    const perp = new THREE.Vector3(dp.z - spawn.z, 0, spawn.x - dp.x).normalize();
+    p.addScaledVector(perp, (i % 2 ? 2.6 : -2.6) + Math.sin(k * 5) * 1.2);
+    p.y = H(p.x, p.z);
+    const lamp = new THREE.Group();
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(.055, .075, 3.1, 6), PHONG(pal.wood));
+    pole.position.y = 1.55; lamp.add(pole);
+    const head = new THREE.Mesh(new THREE.OctahedronGeometry(.24, 0),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(pal.winOn) }));
+    head.position.y = 3.2; lamp.add(head);
+    const gl = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: TEX.glow, color: new THREE.Color(pal.winOn), transparent: true,
+      blending: THREE.AdditiveBlending, depthWrite: false, opacity: .55, fog: false
+    }));
+    gl.scale.setScalar(4.2); gl.position.y = 3.2; lamp.add(gl);
+    const pool = new THREE.Mesh(new THREE.PlaneGeometry(7, 7),
+      new THREE.MeshBasicMaterial({
+        map: TEX.disc, color: new THREE.Color(pal.winOn), transparent: true,
+        depthWrite: false, blending: THREE.AdditiveBlending, opacity: .18
+      }));
+    pool.rotation.x = -Math.PI / 2; pool.position.y = .06; lamp.add(pool);
+    lamp.position.copy(p);
+    w.group.add(lamp);
+    w.lamps.push({ g: lamp, gl, ph: rnd() * TAU });
+  }
+}
+
+/* あかりを ひとつ ともす */
+function lightTown(n) {
+  if (!W || !W.houses) return;
+  const off = W.houses.filter(h => !h.lit);
+  const take = Math.min(n, off.length);
+  for (let i = 0; i < take; i++) {
+    const h = off[(Math.random() * off.length) | 0];
+    if (h.lit) { i--; continue; }
+    h.lit = true;
+    const cOn = new THREE.Color(W.cfg.townPal.winOn);
+    const cOff = new THREE.Color(W.cfg.townPal.winOff);
+    const delay = i * .55 + Math.random() * .3;
+    TL.run([
+      { d: delay },
+      {
+        d: 1.4,
+        on: () => SFX.window(i),
+        upd: k => {
+          h.winM.color.copy(cOff).lerp(cOn, easeOut(k));
+          h.glow.material.opacity = easeOut(k) * .42;
+        }
+      }
+    ]);
+  }
 }
 
 /* ---------------------------------------------------------- 配置 */
