@@ -146,6 +146,14 @@
   #bubble.dark{background:rgba(26,14,22,.90);color:#e8d6da;box-shadow:0 7px 30px rgba(0,0,0,.6);}
   #bubble.dark .bname{color:rgba(232,214,218,.45);}
   #bubble.dark .tail{background:rgba(26,14,22,.90);}
+  /* じぶんの こえ */
+  #bubble.me{background:rgba(238,246,252,.93);color:#3c4653;border-radius:20px;
+    box-shadow:0 7px 26px rgba(40,52,74,.26);}
+  #bubble.me .bname{color:rgba(60,70,83,.46);}
+  #bubble.me .tail{background:rgba(238,246,252,.93);}
+  #bubble.me.dark{background:rgba(20,20,32,.90);color:#d6dcea;}
+  #bubble.me.dark .bname{color:rgba(214,220,234,.42);}
+  #bubble.me.dark .tail{background:rgba(20,20,32,.90);}
 
   /* open button */
   #btnOpen{position:absolute;right:calc(env(safe-area-inset-right) + 22px);
@@ -1123,17 +1131,21 @@ const CHAPTERS = [
     water: { level: 0, deep: '#7fb5d6', shallow: '#cbe9f2', lakes: [[-1.45, .42, 21, 6.0]], fish: true },
     light: { hemiSky: '#ffeed8', hemiGround: '#9fb08c', dir: '#fff3dd', dirInt: 1.0, amb: .46 },
     lantern: '#fff0c0', birdCall: 11,
+    opening: '……どうして、あるいてるんだろう。', firstThought: 'ひかりは、ひろうと あたたかい。',
     people: [
       {
         kind: 'child', at: [2.5, .34], pet: 'dog', petColor: '#e8d3b4',
-        lines: ['ここで ずっと まってるんだ。', 'だれを まってるの? って?',
+        lines: ['ここで ずっと まってるんだ。', '*だれを まってるの?',
           'じぶんでも、わすれちゃった。', 'でも まってるの、きらいじゃないよ。',
-          'まってると、あるいてる ひとに あえるから。']
+          'まってると、あるいてる ひとに あえるから。',
+          '*……わたしも、なにかを さがしてる きが する。', 'じゃあ、おなじだね。']
       },
       {
         kind: 'hat', at: [-1.9, .58],
-        lines: ['きみも、とびらを あけるひと?', 'ぼくは もうすこし ここで やすむよ。',
-          'いそがなくて いい。みちは にげないから。']
+        lines: ['きみも、とびらを あけるひと?',
+          '*わからない。でも、あしが かってに すすむの。',
+          'いいね。それが いちばん つよいよ。', 'ぼくは もうすこし ここで やすむ。',
+          '*……また あえる?', 'あえるさ。みちは ひとつしか ないから。']
       }
     ],
     animals: [{ kind: 'deer', n: 3, color: '#d4b394', shy: true }],
@@ -1160,17 +1172,19 @@ const CHAPTERS = [
     water: { level: 0, deep: '#5f8fb8', shallow: '#b9dced', lakes: [[1.15, .34, 31, 8.0], [-1.35, .56, 19, 6.0]], fish: true },
     light: { hemiSky: '#e6ecff', hemiGround: '#8fa0a8', dir: '#f3e6f2', dirInt: .82, amb: .52 },
     lantern: '#e8f4ff', birdCall: 15,
+    opening: 'みずの おとが する。だれかの こえみたい。', firstThought: 'これ、なくしたものに にてる。',
     people: [
       {
         kind: 'water', at: [1.15, .52],
-        lines: ['みずに うつるものを、ずっと みていた。', 'なくしたものが、そこに いるきが して。',
-          'でも、すくおうとすると きえるんだ。', 'きみは、まだ すくえるものを もっている?',
-          'いいんだ。もっていって。わたしのぶんも。']
+        lines: ['みずに うつるものを、ずっと みていた。', '*なにが みえるの?',
+          'なくしたものが、そこに いるきが して。', 'でも、すくおうとすると きえるんだ。',
+          '*……わたしにも、そういうのが ある きがする。',
+          'そう。じゃあ、もっていって。わたしのぶんも。']
       },
       {
         kind: 'girl', at: [-1.0, .40],
-        lines: ['さかなが とんだよ! みた?', 'いま! いま とんだの!',
-          '……つぎは、いっしょに みようね。']
+        lines: ['さかなが とんだよ! みた?', '*……みそこねた。', 'いま! いま とんだの!',
+          '*じゃあ、もうすこし ここに いようかな。', '……つぎは、いっしょに みようね。']
       }
     ],
     animals: [{ kind: 'wader', n: 5, color: '#f2f4fa' }, { kind: 'deer', n: 2, color: '#c8bcc4', shy: true }],
@@ -1201,18 +1215,22 @@ const CHAPTERS = [
     cloud: 6, water: null,
     light: { hemiSky: '#d8bacb', hemiGround: '#565466', dir: '#ffc898', dirInt: 1.45, amb: .52 },
     lantern: '#ffe0a8', birdCall: 22,
+    opening: 'ひとの すむ においが する。ひさしぶり。', firstThought: 'まどが ひとつ、ともった。',
     people: [
       {
         kind: 'keeper', at: [.55, .40],
-        lines: ['この まちには、とびらが おおい。', 'とびらは、だれかが つくるんじゃない。',
-          '「いきたい」と おもった ばしょに、ひとりでに できる。',
+        lines: ['この まちには、とびらが おおい。', '*だれが つくったの?',
+          'だれでもない。「いきたい」と おもった ばしょに、ひとりでに できる。',
           'ここの ひとは、みんな じぶんの とびらを とじた。',
-          'わるいことじゃ ないよ。ここが すきなんだ。']
+          '*とじたら、どうなるの?', 'あたたかいよ。それだけ。',
+          '*……わたしも、とじたく なるのかな。', 'なったら、この まちに おいで。']
       },
       {
         kind: 'townboy', at: [-1.5, .34],
-        lines: ['よるに なると、あかりが ひとつずつ つくんだ。', 'まどの かずだけ、まってる ひとが いるんだって。',
-          'ぼくの まどは、まだ くらいまま。', 'ともして くれる?']
+        lines: ['よるに なると、あかりが ひとつずつ つくんだ。',
+          'まどの かずだけ、まってる ひとが いるんだって。',
+          '*きみの まどは?', 'まだ くらいまま。', 'ともして くれる?',
+          '*……やってみる。']
       }
     ],
     animals: [{ kind: 'cat', n: 2, color: '#d8cfc4' }, { kind: 'dog', n: 1, color: '#c9b49a' }],
@@ -1225,24 +1243,30 @@ const CHAPTERS = [
   },
   {
     no: '四', title: 'わすれられた夢', cap: 'とじた とびらの うら',
-    bgm: 'nightmare', bgmLevel: 1.15, lanterns: 4, radius: 62, seed: 66613, doorAngle: 2.6, variant: 4,
-    nightmare: true,
+    bgm: 'nightmare', bgmLevel: 1.15, lanterns: 4, radius: 74, seed: 66613, doorAngle: 2.6, variant: 4,
+    nightmare: true, doorR: .72, spawnR: .56,
+    corridor: { w: 9, soft: 11, h: 25, bend: 15 },
+    emberPath: '#ff7048',
     sky: { top: '#120c18', mid: '#2a1220', bot: '#4a1c22', sun: '#5e1c1c', sunDir: [.3, -.05, -.95], pow: 16, i: .30 },
-    fog: { color: '#231520', density: .0270 },
+    fog: { color: '#231520', density: .0235 },
     ground: { grass: '#392a3c', grass2: '#4a3144', dry: '#523339', rock: '#281e2a', amp: 11.5 },
-    tree: { count: 90, foliage: ['#1b1320', '#251827', '#2e1b26'], trunk: '#150e18', h: [4.0, 8.0], dead: true },
+    tree: { count: 110, foliage: ['#1b1320', '#251827', '#2e1b26'], trunk: '#150e18', h: [4.0, 8.5], dead: true },
     flower: { count: 150, colors: ['#4e2233', '#3c1c2a', '#5a2638'] },
     rock: { count: 30, color: '#1f1721' },
     mote: { count: 190, color: '#8a2432', size: .55, rise: -.12, spread: 42 },
     cloud: 0, water: null, shadows: 6,
-    light: { hemiSky: '#5e3745', hemiGround: '#1c1220', dir: '#8e2830', dirInt: .60, amb: .34 },
+    light: { hemiSky: '#6e4050', hemiGround: '#241826', dir: '#9e2e34', dirInt: .70, amb: .42 },
     lantern: '#ff9a6a',
+    opening: '……ここ、しってる。', firstThought: 'てが ふるえてる。でも、あるける。',
     people: [
       {
-        kind: 'past', at: [-.95, .44],
-        lines: ['あるくのを やめようと おもったこと、ある?',
-          'わたしは、ここで やめたんだ。', 'くらいけど、もう つかれないよ。',
-          'きみは、まだ あるける?', '……そう。いってらっしゃい。']
+        kind: 'past', at: [.55, 3.4],
+        lines: ['ひさしぶり。', '*……だれ?', 'わかってる くせに。',
+          'あるくのを やめようと おもったこと、あるでしょう。', '*ある。',
+          'わたしは、そこで やめたの。', 'くらいけど、もう つかれないよ。',
+          '*……さむく ない?', 'さむいよ。でも、あるくよりは まし。',
+          '*わたしは、まだ あるける。', '……そう。',
+          'じゃあ、わたしの ぶんも みてきて。', '*うん。', 'いってらっしゃい。']
       }
     ],
     lines: [
@@ -1265,17 +1289,23 @@ const CHAPTERS = [
     cloud: 11, water: null, floaters: 10,
     light: { hemiSky: '#a99ad4', hemiGround: '#584d74', dir: '#ffd0a0', dirInt: 2.1, amb: .40 },
     lantern: '#ffdda8', birdCall: 18,
+    opening: 'ゆめから でたら、まだ そらが あかるかった。', firstThought: 'あと すこしなのが、わかる。',
     people: [
       {
         kind: 'granny', at: [-1.25, .46],
-        lines: ['わたしも、たくさんの とびらを あけたよ。', 'こわくて、あけられなかった とびらもある。',
-          'あの ゆめの ばしょ、とおってきたのね。', 'あそこに いた あの子は、あなた だったでしょう。',
-          'おいてきて いいの。うらまないから。', 'だいじょうぶ。ぜんぶ、あなたの ものよ。']
+        lines: ['わたしも、たくさんの とびらを あけたよ。', '*こわく なかった?',
+          'こわかった。あけられなかった とびらも ある。',
+          'あの ゆめの ばしょ、とおってきたのね。',
+          '*……ひとに あった。むかしの わたしに。',
+          'そう。あそこに いた あの子は、あなた だったでしょう。',
+          '*うらまれて ないかな。', 'うらまないよ。あの子は、あなたが あるくのを みたかったの。',
+          'だいじょうぶ。ぜんぶ、あなたの ものよ。']
       },
       {
         kind: 'hat', at: [1.6, .60],
-        lines: ['また あえたね。', 'きみを みていたら、ぼくも あるきたくなった。',
-          'さきに いくよ。とびらの むこうで。']
+        lines: ['また あえたね。', '*あえた。',
+          'きみを みていたら、ぼくも あるきたく なった。', '*いっしょに いく?',
+          '……いや。さきに いくよ。とびらの むこうで。']
       }
     ],
     animals: [{ kind: 'deer', n: 3, color: '#a08498', shy: true }],
@@ -1301,13 +1331,14 @@ const CHAPTERS = [
     cloud: 0, water: null, stars: true, path: true,
     light: { hemiSky: '#a6b0ea', hemiGround: '#3c4070', dir: '#c9d2ff', dirInt: .55, amb: .34 },
     lantern: '#dfe8ff',
+    opening: 'もう、こわく ない。',
     animals: [{ kind: 'cat', n: 1, color: '#eae4f2', tame: true }],
     people: [
       {
         kind: 'hat', at: [.09, .57],
-        lines: ['やっぱり、きたね。', 'ぼくは ここで まつことに したよ。',
+        lines: ['やっぱり、きたね。', '*まってたの?', 'うん。ここで まつことに したよ。',
           'つぎの ひとが とおるまで。', 'あの まちの あかりみたいに ね。',
-          'いってらっしゃい。']
+          '*……ありがとう。', 'いってらっしゃい。']
       }
     ],
     lines: [],
@@ -1510,6 +1541,46 @@ void main(){
 /* =========================================================================
    WORLD
    ========================================================================= */
+/* 一本道の みちすじ（章の設定から きまる） */
+const _corrCache = {};
+function corridorPath(cfg) {
+  if (_corrCache[cfg.seed]) return _corrCache[cfg.seed];
+  const R = cfg.radius, c = cfg.corridor, dA = cfg.doorAngle;
+  const dx0 = Math.sin(dA) * R * (cfg.doorR || .66), dz0 = Math.cos(dA) * R * (cfg.doorR || .66);
+  const sx0 = Math.sin(dA + Math.PI) * R * (cfg.spawnR || .30), sz0 = Math.cos(dA + Math.PI) * R * (cfg.spawnR || .30);
+  const vx = dx0 - sx0, vz = dz0 - sz0, L = Math.hypot(vx, vz) || 1;
+  const nx = -vz / L, nz = vx / L;
+  const pts = [];
+  const N = 28;
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const off = Math.sin(t * Math.PI * 1.7) * (c ? c.bend : 0);
+    pts.push({ x: sx0 + vx * t + nx * off, z: sz0 + vz * t + nz * off, nx, nz, t });
+  }
+  _corrCache[cfg.seed] = pts;
+  return pts;
+}
+function pathPoint(pts, t) {
+  const f = clamp(t, 0, 1) * (pts.length - 1);
+  const i = Math.min(Math.floor(f), pts.length - 2), k = f - i;
+  const a = pts[i], b = pts[i + 1];
+  return { x: lerp(a.x, b.x, k), z: lerp(a.z, b.z, k), nx: a.nx, nz: a.nz };
+}
+function distToPath(pts, x, z) {
+  let best = 1e9;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const ax = pts[i].x, az = pts[i].z, bx = pts[i + 1].x, bz = pts[i + 1].z;
+    const dx = bx - ax, dz = bz - az;
+    const l2 = dx * dx + dz * dz || 1;
+    let t = ((x - ax) * dx + (z - az) * dz) / l2;
+    t = t < 0 ? 0 : t > 1 ? 1 : t;
+    const px = ax + dx * t, pz = az + dz * t;
+    const d = Math.hypot(x - px, z - pz);
+    if (d < best) best = d;
+  }
+  return best;
+}
+
 function makeHeightFn(cfg) {
   const n1 = makeNoise2(cfg.seed), n2 = makeNoise2(cfg.seed + 913), n3 = makeNoise2(cfg.seed + 7717);
   const R = cfg.radius, amp = cfg.ground.amp;
@@ -1518,6 +1589,18 @@ function makeHeightFn(cfg) {
     const a = cfg.doorAngle + L[0];
     return [Math.sin(a) * R * L[1], Math.cos(a) * R * L[1], L[2], 0, L[3]];
   });
+  const corr = cfg.corridor;
+  const cpath = corr ? corridorPath(cfg) : null;
+  if (corr) {
+    /* 谷あいの 一本道 : みちから はなれるほど かべが せりあがる */
+    return function (x, z) {
+      const d = distToPath(cpath, x, z);
+      const wall = smoothstep(corr.w, corr.w + corr.soft, d);
+      const bumpy = n1(x * .09, z * .09) * 1.1 + n2(x * .028, z * .028) * 2.2;
+      const walls = n3(x * .035, z * .035) * 6 + n1(x * .012, z * .012) * 9;
+      return bumpy * (1 - wall) * .5 + wall * (corr.h + walls) - 1.2;
+    };
+  }
   return function (x, z) {
     const r = Math.hypot(x, z);
     let e = n1(x * .0125, z * .0125) * amp
@@ -1594,12 +1677,22 @@ function buildWorld(cfg) {
   let H = makeHeightFn(cfg);
   const R = cfg.radius;
   const dA = cfg.doorAngle;
-  const doorPos = new THREE.Vector3(Math.sin(dA) * R * .66, 0, Math.cos(dA) * R * .66);
-  const spawn = new THREE.Vector3(Math.sin(dA + Math.PI) * R * .30, 0, Math.cos(dA + Math.PI) * R * .30);
+  const doorPos = new THREE.Vector3(Math.sin(dA) * R * (cfg.doorR || .66), 0, Math.cos(dA) * R * (cfg.doorR || .66));
+  const spawn = new THREE.Vector3(Math.sin(dA + Math.PI) * R * (cfg.spawnR || .30), 0,
+    Math.cos(dA + Math.PI) * R * (cfg.spawnR || .30));
 
   const lanternSpots = [];
   const need = cfg.lanterns;
-  for (let i = 0; i < need; i++) {
+  if (cfg.corridor) {
+    const cp = corridorPath(cfg);
+    for (let i = 0; i < need; i++) {
+      const t = (i + 1) / (need + 1) * .92 + .04;
+      const q = pathPoint(cp, t);
+      const side = (i % 2 ? 1 : -1) * (1.8 + (i % 3));
+      lanternSpots.push(new THREE.Vector3(q.x + q.nx * side, 0, q.z + q.nz * side));
+    }
+  }
+  for (let i = 0; cfg.corridor ? false : i < need; i++) {
     let best = null, bestD = -1;
     for (let k = 0; k < 60; k++) {
       const a = rnd() * TAU, rr = R * (.26 + rnd() * .58);
@@ -1686,10 +1779,11 @@ function buildWorld(cfg) {
       const x = Math.sin(a) * rr, z = Math.cos(a) * rr, y = H(x, z);
       if (y < wl + 1.0) continue;
       const dx = (H(x + 1.4, z) - H(x - 1.4, z)) / 2.8, dz = (H(x, z + 1.4) - H(x, z - 1.4)) / 2.8;
-      if (Math.hypot(dx, dz) > .85) continue;
+      if (Math.hypot(dx, dz) > (cfg.corridor ? 1.5 : .85)) continue;
       if (Math.hypot(x - doorPos.x, z - doorPos.z) < 12) continue;
       if (Math.hypot(x - spawn.x, z - spawn.z) < 9) continue;
       if (cfg.town && Math.hypot(x, z) < 25) continue;
+      if (cfg.corridor && distToPath(corridorPath(cfg), x, z) < cfg.corridor.w * .8) continue;
       let ok = true;
       for (const s of lanternSpots) if (Math.hypot(x - s.x, z - s.z) < 6) { ok = false; break; }
       if (!ok) continue;
@@ -1836,6 +1930,24 @@ function buildWorld(cfg) {
       const m = new THREE.Mesh(pg, pm);
       m.position.set(p.x, H(p.x, p.z) + .09, p.z);
       m.scale.setScalar(.7 + Math.sin(k * 9) * .12);
+      w.group.add(m);
+    }
+  }
+
+  /* ---- 一本道の しるし ---- */
+  if (cfg.emberPath) {
+    const cp = corridorPath(cfg);
+    const pg = new THREE.CircleGeometry(1.25, 9); pg.rotateX(-Math.PI / 2);
+    const pm = new THREE.MeshBasicMaterial({
+      map: TEX.disc, color: new THREE.Color(cfg.emberPath), transparent: true,
+      depthWrite: false, blending: THREE.AdditiveBlending, opacity: .55
+    });
+    for (let i = 0; i <= 46; i++) {
+      const q = pathPoint(cp, i / 46);
+      const sx = q.x + q.nx * Math.sin(i * 1.9) * 1.1, sz = q.z + q.nz * Math.sin(i * 1.9) * 1.1;
+      const m = new THREE.Mesh(pg, pm);
+      m.position.set(sx, H(sx, sz) + .07, sz);
+      m.scale.setScalar(.85 + Math.sin(i * .7) * .22);
       w.group.add(m);
     }
   }
@@ -2037,30 +2149,11 @@ function createDoor(w, pos, yaw, cfg, orbCount, closed) {
 
 /* ---------------------------------------------------------------- player */
 function makePlayer() {
-  const g = new THREE.Group();
-  const skin = new THREE.MeshPhongMaterial({ shininess: 0, specular: 0x000000, color: new THREE.Color('#f6ddc8'), flatShading: true });
-  const cloth = new THREE.MeshPhongMaterial({ shininess: 0, specular: 0x000000, color: new THREE.Color('#f2f4f8'), flatShading: true });
-  const cloak = new THREE.MeshPhongMaterial({ shininess: 0, specular: 0x000000, color: new THREE.Color('#e5b9c4'), flatShading: true, side: THREE.DoubleSide });
-  const hair = new THREE.MeshPhongMaterial({ shininess: 0, specular: 0x000000, color: new THREE.Color('#5a4a55'), flatShading: true });
-
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(.20, .30, .62, 7), cloth);
-  body.position.y = .78; g.add(body);
-
-  const cape = new THREE.Mesh(new THREE.ConeGeometry(.42, .92, 7, 1, true), cloak);
-  cape.position.y = .82; g.add(cape);
-
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.235, 10, 8), skin);
-  head.position.y = 1.30; g.add(head);
-  const hairM = new THREE.Mesh(new THREE.SphereGeometry(.255, 10, 8, 0, TAU, 0, Math.PI * .62), hair);
-  hairM.position.y = 1.31; g.add(hairM);
-
-  const armGeo = new THREE.CylinderGeometry(.062, .05, .5, 5); armGeo.translate(0, -.25, 0);
-  const armL = new THREE.Mesh(armGeo, cloth); armL.position.set(-.26, 1.03, 0); g.add(armL);
-  const armR = new THREE.Mesh(armGeo, cloth); armR.position.set(.26, 1.03, 0); g.add(armR);
-
-  const legGeo = new THREE.CylinderGeometry(.075, .06, .5, 5); legGeo.translate(0, -.25, 0);
-  const legL = new THREE.Mesh(legGeo, cloth); legL.position.set(-.11, .5, 0); g.add(legL);
-  const legR = new THREE.Mesh(legGeo, cloth); legR.position.set(.11, .5, 0); g.add(legR);
+  const f = makeFigure({
+    cloth: '#f6f7fb', skirt: '#e79fb1', collar: '#fdfdff', hair: '#4e3f4a',
+    skin: '#f7ddc6', shoe: '#b9b2c8', cape: '#dfa9b6', capeOn: true,
+    eye: '#3b3340', scale: 1
+  });
 
   const sh = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 1.25),
     new THREE.MeshBasicMaterial({ map: TEX.disc, transparent: true, depthWrite: false, color: 0x33294a, opacity: .34 }));
@@ -2068,13 +2161,14 @@ function makePlayer() {
 
   const lamp = new THREE.Sprite(new THREE.SpriteMaterial({
     map: TEX.glow, color: new THREE.Color('#ffe9b8'), transparent: true,
-    blending: THREE.AdditiveBlending, depthWrite: false, opacity: .55, fog: false
+    blending: THREE.AdditiveBlending, depthWrite: false, opacity: .24, fog: false
   }));
   lamp.scale.setScalar(1.9); lamp.position.y = .95;
-  g.add(lamp);
+  f.g.add(lamp);
 
   return {
-    g, sh, armL, armR, legL, legR, body, cape, lamp,
+    g: f.g, sh, armL: f.armL, armR: f.armR, legL: f.legL, legR: f.legR,
+    body: f.body, cape: f.cape || f.skirt, lamp,
     pos: new THREE.Vector3(), vel: new THREE.Vector3(), face: 0, phase: 0, stepT: 0, speed: 0
   };
 }
@@ -2246,7 +2340,7 @@ function enterChapter(i) {
   PL.face = Math.atan2(toDoor.x, toDoor.z);
   PL.g.rotation.y = PL.face;
   IN.yaw = PL.face + Math.PI;
-  IN.pitch = .24; IN.dist = 7.6;
+  IN.pitch = .24; IN.dist = cfg.corridor ? 5.9 : 7.6;
   $('chapName').textContent = cfg.title;
   setOrbsUI(0, cfg.lanterns);
   $('hud').classList.remove('hidden');
@@ -2257,6 +2351,7 @@ function enterChapter(i) {
   });
   showCard(cfg);
   SFX.chapter();
+  if (cfg.opening) setTimeout(() => { if (G.state === 'play' && G.ch === i) monologue(cfg.opening, 5.6); }, 5400);
   fadeTo(0, 3.4);
   IN.enabled = true;
   G.state = 'play';
@@ -2283,6 +2378,7 @@ function collect(l, idx) {
   setOrbsUI(G.got, G.need);
   const cfg = CHAPTERS[G.ch];
   if (cfg.lines[G.got - 1]) say(cfg.lines[G.got - 1], 6000);
+  if (G.got === 1 && cfg.firstThought) setTimeout(() => { if (G.state === 'play') monologue(cfg.firstThought, 5); }, 2200);
   MUS.setIntensity(intensityFor(G.got, G.need));
   /* ドアの上の玉に ともる */
   const orb = W.door.orbs[G.got - 1];
@@ -2319,6 +2415,7 @@ function unlockDoor() {
   SFX.unlock();
   AU.duck(.55, 3.2);
   setTimeout(() => say('とびらが、ひらく じゅんびを した。', 5200), 900);
+  setTimeout(() => { if (G.state === 'play') monologue('……ひらく。', 4); }, 3400);
   TL.run([{
     d: 3.0, upd: k => {
       const e = easeOut(k);
@@ -2720,10 +2817,12 @@ function updatePlayer(dt) {
       move.normalize();
       const wl = cfg.water ? cfg.water.level + .10 : -1e9;
       const step = sp * dt;
+      const maxRise = cfg.corridor ? step * 1.0 + .02 : 1e9;   /* きゅうな かべは のぼれない */
+      const ok = (ax, az) => { const h = W.H(ax, az); return h > wl && (h - PL.pos.y) < maxRise; };
       const nx = PL.pos.x + move.x * step, nz = PL.pos.z + move.z * step;
-      if (W.H(nx, nz) > wl) { PL.pos.x = nx; PL.pos.z = nz; }
-      else if (W.H(nx, PL.pos.z) > wl) { PL.pos.x = nx; }
-      else if (W.H(PL.pos.x, nz) > wl) { PL.pos.z = nz; }
+      if (ok(nx, nz)) { PL.pos.x = nx; PL.pos.z = nz; }
+      else if (ok(nx, PL.pos.z)) { PL.pos.x = nx; }
+      else if (ok(PL.pos.x, nz)) { PL.pos.z = nz; }
       PL.face = lerpAngle(PL.face, Math.atan2(move.x, move.z), 1 - Math.exp(-dt * 9));
       G.walked += step;
       IN.camIdle += dt;
@@ -2760,7 +2859,7 @@ function updatePlayer(dt) {
   PL.armL.rotation.x = -s * .45 * PL.speed;
   PL.armR.rotation.x = s * .45 * PL.speed;
   PL.g.position.y += Math.abs(c) * .045 * PL.speed;
-  PL.body.rotation.z = s * .04 * PL.speed;
+  PL.body.rotation.z = s * .035 * PL.speed;
   PL.cape.rotation.x = -s * .05 * PL.speed;
   const nm = W && W.cfg && W.cfg.nightmare;
   PL.lamp.material.opacity = (nm ? .55 : .24) + (nm ? .16 : .10) * Math.sin(G.t * 1.7);
@@ -2798,7 +2897,7 @@ function updateCamera(dt) {
     camera.lookAt(camTarget);
     return;
   }
-  const hd = G.state === 'ending' ? 2.1 : 1.62;
+  const hd = G.state === 'ending' ? 2.15 : 1.68;
   _tgt.set(PL.pos.x, PL.pos.y + hd, PL.pos.z);
   const off = new THREE.Vector3(
     Math.sin(IN.yaw) * Math.cos(IN.pitch), Math.sin(IN.pitch) + .05, Math.cos(IN.yaw) * Math.cos(IN.pitch)
@@ -2955,7 +3054,7 @@ function updatePlay(dt) {
   const cfg = CHAPTERS[G.ch];
   if (cfg.walkLines && G.walkLine < cfg.walkLines.length) {
     const need = 16 + G.walkLine * 22;
-    if (G.walked > need) { say(cfg.walkLines[G.walkLine], 6000); G.walkLine++; }
+    if (G.walked > need) { monologue(cfg.walkLines[G.walkLine], 5.6); G.walkLine++; }
   }
 }
 
@@ -3080,63 +3179,162 @@ const PHONG = (c, extra) => {
 
 /* であう ひとたち */
 const FIGURES = {
-  child:  { name: 'こども',        scale: .70, cloth: '#ffd9a8', hair: '#4a3a3a', pitch: 76 },
-  hat:    { name: 'ぼうしの ひと', scale: 1.02, cloth: '#cfd8e8', hair: '#3f3a44', hat: '#b3a189', pitch: 67 },
-  water:  { name: 'みずべの ひと', scale: .98, cloth: '#d8cfe4', hair: '#4a4450', sit: true, pitch: 63 },
-  girl:   { name: 'ちいさな こ',   scale: .66, cloth: '#f8c8d4', hair: '#5a4048', pitch: 79 },
-  granny: { name: 'おばあさん',    scale: .84, cloth: '#e6dcc8', hair: '#ece8e2', bend: .22, cane: true, pitch: 58 },
-  keeper: { name: 'とびらの ばんにん', scale: 1.14, cloth: '#6f6a88', hair: '#38343f', hat: '#4e4a62', pitch: 53 },
-  townboy:{ name: 'まちの こ',      scale: .72, cloth: '#e8cfa4', hair: '#493a32', pitch: 74 },
-  past:   { name: 'むかしの わたし', scale: 1.00, cloth: '#7a7c86', hair: '#3f3640', cape: '#7f6670', sit: true, pitch: 62 }
+  child:  { name: 'こども', pitch: 76, scale: .70, cloth: '#ffe0b4', skirt: '#f2b98c', hair: '#4a3a3a',
+            shoe: '#8a6d5a', collar: '#fff3de' },
+  hat:    { name: 'ぼうしの ひと', scale: 1.03, cloth: '#cfd8e8', skirt: '#8e9bb4', robe: true,
+            hair: '#3f3a44', hat: '#b3a189', shoe: '#6b6656', bag: '#a89274', collar: '#e6ecf6', pitch: 67 },
+  water:  { name: 'みずべの ひと', scale: .99, cloth: '#dcd2e8', skirt: '#a99cc0', robe: true,
+            hair: '#4a4450', shoe: '#7a7488', sit: true, collar: '#efe9f6', pitch: 63 },
+  girl:   { name: 'ちいさな こ', scale: .67, cloth: '#fde2ea', skirt: '#f4a8bd', hair: '#5a4048',
+            longHair: true, shoe: '#c2778d', collar: '#fff4f7', pitch: 79 },
+  granny: { name: 'おばあさん', scale: .85, cloth: '#efe7d6', skirt: '#c9bda6', robe: true,
+            hair: '#eceae6', bend: .20, cane: true, shoe: '#8a7f6d', collar: '#fbf6ea', pitch: 58 },
+  keeper: { name: 'とびらの ばんにん', scale: 1.15, cloth: '#7a7398', skirt: '#585072', robe: true,
+            hair: '#38343f', hat: '#4e4a62', shoe: '#403a52', collar: '#8e87aa', pitch: 53 },
+  townboy:{ name: 'まちの こ', scale: .73, cloth: '#f0d9ae', skirt: '#b99a72', robe: true,
+            hair: '#493a32', shoe: '#7d6448', collar: '#faeed4', pitch: 74 },
+  past:   { name: 'むかしの わたし', scale: 1.00, cloth: '#8a8b95', skirt: '#7a6672', hair: '#3f3640',
+            shoe: '#5f5a68', sit: true, collar: '#9a9aa4', pitch: 62 }
 };
+/* ひとの すがた ―― ろくろ（LatheGeometry）で ひとつづきの ふくを つくる */
+const PROF_SKIRT = [[0, 0], [.40, .018], [.345, .12], [.285, .25], [.225, .36]];
+const PROF_ROBE = [[0, 0], [.28, .018], [.265, .13], [.245, .26], [.225, .36]];
+const PROF_TOP = [[.225, .36], [.205, .46], [.215, .575], [.205, .70], [.155, .78], [.075, .82], [0, .835]];
 
-/* ひとの すがた（からだの つくり） */
+function lathe(prof, segs, mat) {
+  const pts = prof.map(q => new THREE.Vector2(q[0], q[1]));
+  const g = new THREE.LatheGeometry(pts, segs);
+  g.computeVertexNormals();
+  return new THREE.Mesh(g, mat);
+}
+
 function makeFigure(o) {
   const g = new THREE.Group();
   const cloth = PHONG(o.cloth || '#f2f4f8');
-  const skin = PHONG(o.skin || '#f6ddc8');
+  const skirtM = PHONG(o.skirt || o.cape || o.cloth || '#e5b9c4');
+  const skin = PHONG(o.skin || '#f2d9c2');
   const hair = PHONG(o.hair || '#5a4a55');
   const parts = { g };
+  const SEG = 9;
 
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(.20, .30, .62, 7), cloth);
-  body.position.y = .78; g.add(body); parts.body = body;
+  /* あし と くつ */
+  const legGeo = new THREE.CylinderGeometry(.056, .047, .46, 6); legGeo.translate(0, -.23, 0);
+  const shoeGeo = new THREE.BoxGeometry(.125, .08, .205); shoeGeo.translate(0, -.505, .024);
+  const shoeM = PHONG(o.shoe || '#c8bfd0');
+  const mkLeg = sx => {
+    const grp = new THREE.Group();
+    const l = new THREE.Mesh(legGeo, skin); grp.add(l);
+    const sh = new THREE.Mesh(shoeGeo, shoeM); grp.add(sh);
+    grp.position.set(sx * .128, .52, 0);
+    g.add(grp);
+    return grp;
+  };
+  parts.legL = mkLeg(-1);
+  parts.legR = mkLeg(1);
 
-  if (o.cape) {
-    const cape = new THREE.Mesh(new THREE.ConeGeometry(.42, .92, 7, 1, true),
-      PHONG(o.cape, { side: THREE.DoubleSide }));
-    cape.position.y = .82; g.add(cape); parts.cape = cape;
+  /* スカート と うわぎ（ひとつづきの シルエット） */
+  const skirt = lathe(o.robe ? PROF_ROBE : PROF_SKIRT, SEG, skirtM);
+  skirt.position.y = .40; g.add(skirt); parts.skirt = skirt;
+  const top = lathe(PROF_TOP, SEG, cloth);
+  top.position.y = .40; g.add(top); parts.body = top;
+
+  /* えり */
+  const collar = new THREE.Mesh(new THREE.CylinderGeometry(.115, .145, .055, SEG), PHONG(o.collar || o.skirt || '#ffffff'));
+  collar.position.y = 1.212; g.add(collar);
+
+  /* くび と あたま */
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(.068, .076, .10, 6), skin);
+  neck.position.y = 1.255; g.add(neck);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.205, 11, 9), skin);
+  head.position.y = 1.44; head.scale.set(1, .97, .95);
+  g.add(head); parts.head = head;
+
+  /* め : ちいさな点だけ */
+  {
+    const eyeM = new THREE.MeshBasicMaterial({ color: new THREE.Color(o.eye || '#413845') });
+    const eg = new THREE.SphereGeometry(.023, 6, 5);
+    [-1, 1].forEach(sd => {
+      const e = new THREE.Mesh(eg, eyeM);
+      e.position.set(sd * .069, 1.392, .188);
+      e.scale.set(1, 1.30, .65);
+      g.add(e);
+      parts[sd < 0 ? 'eyeL' : 'eyeR'] = e;
+    });
   }
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.235, 10, 8), skin);
-  head.position.y = 1.30; g.add(head); parts.head = head;
-  const hairM = new THREE.Mesh(new THREE.SphereGeometry(.255, 10, 8, 0, TAU, 0, Math.PI * (o.bald ? .35 : .62)), hair);
-  hairM.position.y = 1.31; g.add(hairM);
 
+  /* かみ : うしろ・つむじ・まえがみ */
+  const hairBack = new THREE.Mesh(new THREE.SphereGeometry(.222, 11, 9, 0, TAU, 0, Math.PI * (o.bald ? .34 : .555)), hair);
+  hairBack.position.y = 1.447; hairBack.scale.set(1, 1.02, 1.03);
+  g.add(hairBack);
+  if (!o.bald) {
+    const fringe = new THREE.Mesh(new THREE.SphereGeometry(.215, 10, 7, 0, TAU, 0, Math.PI * .30), hair);
+    fringe.position.set(0, 1.438, .026); fringe.rotation.x = .40;
+    g.add(fringe);
+    if (o.longHair) {
+      const tail = new THREE.Mesh(new THREE.SphereGeometry(.15, 8, 7), hair);
+      tail.position.set(0, 1.30, -.15); tail.scale.set(.85, 1.5, .7);
+      g.add(tail);
+    }
+  }
+
+  /* ぼうし */
   if (o.hat) {
     const hm = PHONG(o.hat);
-    const brim = new THREE.Mesh(new THREE.CylinderGeometry(.40, .42, .04, 12), hm);
-    brim.position.y = 1.46; g.add(brim);
-    const top = new THREE.Mesh(new THREE.ConeGeometry(.24, .30, 8), hm);
-    top.position.y = 1.60; g.add(top);
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(.36, .385, .035, 12), hm);
+    brim.position.y = 1.565; g.add(brim);
+    const crown = new THREE.Mesh(new THREE.ConeGeometry(.20, .27, 9), hm);
+    crown.position.y = 1.70; g.add(crown);
   }
-  const armGeo = new THREE.CylinderGeometry(.062, .05, .5, 5); armGeo.translate(0, -.25, 0);
-  const armL = new THREE.Mesh(armGeo, cloth); armL.position.set(-.26, 1.03, 0); g.add(armL);
-  const armR = new THREE.Mesh(armGeo, cloth); armR.position.set(.26, 1.03, 0); g.add(armR);
-  parts.armL = armL; parts.armR = armR;
 
-  const legGeo = new THREE.CylinderGeometry(.075, .06, .5, 5); legGeo.translate(0, -.25, 0);
-  const legL = new THREE.Mesh(legGeo, cloth); legL.position.set(-.11, .5, 0); g.add(legL);
-  const legR = new THREE.Mesh(legGeo, cloth); legR.position.set(.11, .5, 0); g.add(legR);
-  parts.legL = legL; parts.legR = legR;
+  /* うで と て */
+  const armGeo = new THREE.CylinderGeometry(.055, .046, .40, 6); armGeo.translate(0, -.20, 0);
+  const handGeo = new THREE.SphereGeometry(.052, 7, 6); handGeo.translate(0, -.41, 0);
+  const mkArm = sx => {
+    const grp = new THREE.Group();
+    grp.add(new THREE.Mesh(armGeo, cloth));
+    grp.add(new THREE.Mesh(handGeo, skin));
+    grp.position.set(sx * .243, 1.128, 0);
+    grp.rotation.z = -sx * .19;
+    g.add(grp);
+    return grp;
+  };
+  parts.armL = mkArm(-1);
+  parts.armR = mkArm(1);
 
+  /* マント（もっている ひとだけ） */
+  if (o.cape && o.capeOn) {
+    const cape = lathe([[.095, .38], [.175, .29], [.235, .13], [.262, 0]], SEG,
+      PHONG(o.cape, { side: THREE.DoubleSide }));
+    cape.position.y = 1.035; g.add(cape); parts.cape = cape;
+  }
+  if (o.bag) {
+    const bag = new THREE.Mesh(new THREE.SphereGeometry(.115, 8, 6), PHONG(o.bag));
+    bag.scale.set(1, .92, .62); bag.position.set(.20, .80, -.16); g.add(bag);
+    const strap = new THREE.Mesh(new THREE.TorusGeometry(.185, .014, 4, 12, Math.PI * 1.05),
+      PHONG(o.bagStrap || o.bag));
+    strap.position.set(0, 1.03, -.02); strap.rotation.set(Math.PI / 2, 0, .5);
+    g.add(strap);
+  }
   if (o.cane) {
-    const cane = new THREE.Mesh(new THREE.CylinderGeometry(.03, .035, .95, 5), PHONG('#8a7358'));
-    cane.position.set(.34, .48, .10); g.add(cane);
+    const cane = new THREE.Mesh(new THREE.CylinderGeometry(.026, .032, .92, 5), PHONG('#8a7358'));
+    cane.position.set(.30, .46, .10); g.add(cane);
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(.045, 7, 6), PHONG('#8a7358'));
+    knob.position.set(.30, .92, .10); g.add(knob);
   }
-  if (o.bend) { body.rotation.x = o.bend; head.position.z = o.bend * .5; hairM.position.z = o.bend * .5; }
+
+  /* まえかがみ */
+  if (o.bend) {
+    [top, collar, neck, head, hairBack, parts.eyeL, parts.eyeR, parts.armL, parts.armR].forEach(m => {
+      if (!m) return;
+      m.rotation.x = o.bend;
+      m.position.z += o.bend * .18;
+      m.position.y -= o.bend * .06;
+    });
+  }
   if (o.sit) {
-    legL.rotation.x = -1.35; legR.rotation.x = -1.35;
-    armL.rotation.x = -.5; armR.rotation.x = -.5;
-    g.children.forEach(c => { c.position.y -= .34; });
+    parts.legL.rotation.x = -1.38; parts.legR.rotation.x = -1.38;
+    parts.armL.rotation.x = -.42; parts.armR.rotation.x = -.42;
+    g.children.forEach(c => { c.position.y -= .30; });
     parts.sit = true;
   }
   g.scale.setScalar(o.scale || 1);
@@ -3165,35 +3363,44 @@ function makeAnimal(kind, col) {
     t.rotation.x = -Math.PI / 2; t.position.z = -.42; g.add(t);
     return p;
   }
-  /* four-legged : 足が 地面に つくように くみたてる */
-  const S = kind === 'deer' ? 1.30 : (kind === 'dog' ? .60 : .44);   /* 全体の たかさ */
-  const legLen = .46, bodyY = .62;
-  const body = new THREE.Mesh(new THREE.BoxGeometry(.34, .30, .80), m);
-  body.position.y = bodyY; g.add(body);
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(.085, .11, .30, 5), m);
-  neck.position.set(0, bodyY + .16, .34); neck.rotation.x = -.5; g.add(neck);
-  const head = new THREE.Mesh(new THREE.BoxGeometry(.22, .20, .30), m);
-  head.position.set(0, bodyY + .30, .46); g.add(head);
-  const ear = new THREE.ConeGeometry(.06, .15, 4);
+  /* four-legged : まるみのある からだ、足は 地面に つく */
+  const S = kind === 'deer' ? 1.30 : (kind === 'dog' ? .60 : .44);
+  const legLen = .44, bodyY = .64;
+  const body = new THREE.Mesh(new THREE.SphereGeometry(.30, 8, 6), m);
+  body.scale.set(1.02, .92, 1.52); body.position.y = bodyY; g.add(body);
+  const chest = new THREE.Mesh(new THREE.SphereGeometry(.23, 7, 6), m);
+  chest.scale.set(1, .95, 1.05); chest.position.set(0, bodyY + .06, .26); g.add(chest);
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(.085, .115, .28, 6), m);
+  neck.position.set(0, bodyY + .19, .33); neck.rotation.x = -.55; g.add(neck);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.155, 8, 7), m);
+  head.scale.set(1, .95, 1.12); head.position.set(0, bodyY + .33, .45); g.add(head);
+  const muzzle = new THREE.Mesh(new THREE.ConeGeometry(.085, .19, 6), m);
+  muzzle.rotation.x = Math.PI / 2; muzzle.position.set(0, bodyY + .295, .57); g.add(muzzle);
+  const ear = new THREE.ConeGeometry(.055, .16, 5);
   [-1, 1].forEach(sd => {
     const e = new THREE.Mesh(ear, m);
-    e.position.set(sd * .085, bodyY + .43, .42); e.rotation.z = sd * .28; g.add(e);
+    e.position.set(sd * .085, bodyY + .46, .40); e.rotation.z = sd * .26; e.rotation.x = -.12;
+    g.add(e);
   });
   if (kind === 'deer') {
     [-1, 1].forEach(sd => {
-      const a1 = new THREE.Mesh(new THREE.ConeGeometry(.032, .34, 4), m);
-      a1.position.set(sd * .08, bodyY + .58, .44); a1.rotation.z = sd * .34; g.add(a1);
-      const a2 = new THREE.Mesh(new THREE.ConeGeometry(.026, .20, 4), m);
-      a2.position.set(sd * .19, bodyY + .66, .44); a2.rotation.z = sd * .95; g.add(a2);
+      const a1 = new THREE.Mesh(new THREE.ConeGeometry(.030, .34, 5), m);
+      a1.position.set(sd * .075, bodyY + .60, .42); a1.rotation.z = sd * .32; g.add(a1);
+      const a2 = new THREE.Mesh(new THREE.ConeGeometry(.024, .20, 5), m);
+      a2.position.set(sd * .185, bodyY + .69, .42); a2.rotation.z = sd * .92; g.add(a2);
     });
   }
-  const lg = new THREE.CylinderGeometry(.042, .034, legLen, 5); lg.translate(0, -legLen / 2, 0);
-  [[-.12, .27], [.12, .27], [-.12, -.27], [.12, -.27]].forEach(q => {
-    const l = new THREE.Mesh(lg, m);
-    l.position.set(q[0], legLen + .02, q[1]); g.add(l); p.legs.push(l);
+  const lg = new THREE.CylinderGeometry(.046, .034, legLen, 6); lg.translate(0, -legLen / 2, 0);
+  const hoof = new THREE.SphereGeometry(.045, 6, 5); hoof.translate(0, -legLen, 0);
+  [[-.125, .24], [.125, .24], [-.125, -.26], [.125, -.26]].forEach(q => {
+    const grp = new THREE.Group();
+    grp.add(new THREE.Mesh(lg, m));
+    grp.add(new THREE.Mesh(hoof, m));
+    grp.position.set(q[0], legLen + .02, q[1]);
+    g.add(grp); p.legs.push(grp);
   });
-  const tail = new THREE.Mesh(new THREE.ConeGeometry(.055, kind === 'cat' ? .52 : .22, 4), m);
-  tail.position.set(0, bodyY + .06, -.42); tail.rotation.x = kind === 'cat' ? -.85 : 1.5;
+  const tail = new THREE.Mesh(new THREE.ConeGeometry(.05, kind === 'cat' ? .50 : .20, 5), m);
+  tail.position.set(0, bodyY + .10, -.44); tail.rotation.x = kind === 'cat' ? -.85 : 1.5;
   g.add(tail); p.tail = tail;
   g.scale.setScalar(S);
   return p;
@@ -3387,6 +3594,12 @@ function spawnCast(w, cfg) {
   w.cast = cast;
 
   const place = (ao, rf) => {
+    /* 一本道の章では at:[t, よこずれ] を みちの うえに おく */
+    if (cfg.corridor) {
+      const q = pathPoint(corridorPath(cfg), clamp(ao, 0, 1));
+      const x = q.x + q.nx * rf, z = q.z + q.nz * rf;
+      return new THREE.Vector3(x, H(x, z), z);
+    }
     const a = cfg.doorAngle + ao;
     const x = Math.sin(a) * R * rf, z = Math.cos(a) * R * rf;
     return new THREE.Vector3(x, H(x, z), z);
@@ -3487,10 +3700,19 @@ function spawnCast(w, cfg) {
 
   /* かげの ひと */
   if (cfg.shadows) {
+    const path = cfg.corridor ? corridorPath(cfg) : null;
     for (let i = 0; i < cfg.shadows; i++) {
-      const a = rnd() * TAU, rr = R * (.35 + rnd() * .45);
       const s = makeShadow();
-      const pos = new THREE.Vector3(Math.sin(a) * rr, 0, Math.cos(a) * rr);
+      let pos;
+      if (path) {
+        const t = .10 + rnd() * .82;
+        const q = pathPoint(path, t);
+        const side = (rnd() - .5) * 9;
+        pos = new THREE.Vector3(q.x + q.nx * side, 0, q.z + q.nz * side);
+      } else {
+        const a = rnd() * TAU, rr = R * (.35 + rnd() * .45);
+        pos = new THREE.Vector3(Math.sin(a) * rr, 0, Math.cos(a) * rr);
+      }
       pos.y = H(pos.x, pos.z);
       s.g.position.copy(pos);
       w.group.add(s.g);
@@ -3635,8 +3857,14 @@ function updateTalk(dt) {
     const d = Math.hypot(PL.pos.x - n.pos.x, PL.pos.z - n.pos.z);
     if (d < 3.8 && n.i < n.lines.length && G.t - n.last > 3.9) {
       n.last = G.t;
-      bubbleShow(n, n.lines[n.i]);
-      SFX.talk(n.pitch + (n.i % 2 ? 5 : 0));
+      const raw = n.lines[n.i];
+      if (raw.charAt(0) === '*') {
+        bubbleShow(ME, raw.slice(1));
+        SFX.talk(71);
+      } else {
+        bubbleShow(n, raw);
+        SFX.talk(n.pitch + (n.i % 2 ? 5 : 0));
+      }
       n.i++;
       if (n.i >= n.lines.length) G.metPeople++;
     }
@@ -3680,6 +3908,13 @@ function updateNightmare(w, dt) {
     G.heartT = 1.25;
     SFX.heart(.5 + G.fear * .75);
   }
+  /* こわいときの ひとりごと */
+  G.braveT = (G.braveT || 0) - dt;
+  if (G.fear > .70 && G.braveT <= 0 && !BUB.npc) {
+    G.braveT = 16 + Math.random() * 10;
+    monologue(NIGHT_BRAVE[(Math.random() * NIGHT_BRAVE.length) | 0], 4.4);
+  }
+
   /* ささやき */
   G.whisT -= dt;
   if (G.whisT <= 0) {
@@ -3699,6 +3934,13 @@ function updateNightmare(w, dt) {
     camera.position.y += (Math.random() - .5) * s;
   }
 }
+
+const NIGHT_BRAVE = [
+  '……だいじょうぶ。なにも しない。',
+  'こわいのは、わたしが おぼえてるから。',
+  'あるけば、とおく なる。',
+  'みちは、ひとつしか ない。'
+];
 
 const NIGHT_WHISPERS = [
   'まだ おぼえてる',
@@ -3725,12 +3967,26 @@ function nightmareBeat() {
    ふきだし  ―  あたまの うえに ついてくる
    ========================================================================= */
 const BUB = { npc: null, until: 0 };
+/* じぶん自身を ふきだしの あいてに する */
+const ME = { pos: null, top: 1.98, name: 'わたし', me: true };
+
+/* ひとりごと */
+function monologue(text, hold) {
+  if (!PL) return;
+  ME.pos = PL.pos;
+  BUB.until = 0;
+  bubbleShow(ME, text);
+  BUB.until = G.t + (hold || 5.4);
+  SFX.talk(71);
+}
 
 function bubbleShow(n, text) {
   const el = $('bubble');
+  if (n.me) n.pos = PL.pos;
   el.innerHTML = '<span class="bname">' + n.name + '</span>' +
     text.replace(/\n/g, '<br>') + '<i class="tail"></i>';
   el.classList.toggle('dark', !!(W && W.cfg && W.cfg.nightmare));
+  el.classList.toggle('me', !!n.me);
   BUB.npc = n;
   BUB.until = G.t + 5.8;
   updateBubble();
