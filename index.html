@@ -2187,8 +2187,8 @@ function createDoor(w, pos, yaw, cfg, orbCount, closed) {
 /* ---------------------------------------------------------------- player */
 function makePlayer() {
   const f = makeFigure({
-    cloth: '#f6f7fb', skirt: '#e79fb1', collar: '#fdfdff', hair: '#4e3f4a',
-    skin: '#f7ddc6', shoe: '#b9b2c8', cape: '#dfa9b6', capeOn: true,
+    cloth: '#f7f8fc', skirt: '#e79fb1', sleeve: '#e79fb1', collar: '#fdfdff',
+    hair: '#4e3f4a', skin: '#f7ddc6', shoe: '#b9b2c8',
     eye: '#3b3340', scale: 1
   });
 
@@ -2937,7 +2937,7 @@ function updateCamera(dt) {
     camera.lookAt(camTarget);
     return;
   }
-  const hd = G.state === 'ending' ? 2.15 : 1.68;
+  const hd = G.state === 'ending' ? 2.05 : 1.58;
   _tgt.set(PL.pos.x, PL.pos.y + hd, PL.pos.z);
   const off = new THREE.Vector3(
     Math.sin(IN.yaw) * Math.cos(IN.pitch), Math.sin(IN.pitch) + .05, Math.cos(IN.yaw) * Math.cos(IN.pitch)
@@ -3238,9 +3238,9 @@ const FIGURES = {
             shoe: '#5f5a68', sit: true, collar: '#9a9aa4', pitch: 62 }
 };
 /* ひとの すがた ―― ろくろ（LatheGeometry）で ひとつづきの ふくを つくる */
-const PROF_SKIRT = [[0, 0], [.40, .018], [.345, .12], [.285, .25], [.225, .36]];
-const PROF_ROBE = [[0, 0], [.28, .018], [.265, .13], [.245, .26], [.225, .36]];
-const PROF_TOP = [[.225, .36], [.205, .46], [.215, .575], [.205, .70], [.155, .78], [.075, .82], [0, .835]];
+const PROF_SKIRT = [[0, 0], [.300, .016], [.258, .115], [.198, .245], [.130, .365]];
+const PROF_ROBE = [[0, 0], [.222, .016], [.206, .12], [.176, .25], [.130, .365]];
+const PROF_TOP = [[.130, .365], [.132, .46], [.145, .57], [.156, .68], [.150, .75], [.112, .80], [.055, .83], [0, .845]];
 
 function lathe(prof, segs, mat) {
   const pts = prof.map(q => new THREE.Vector2(q[0], q[1]));
@@ -3252,6 +3252,7 @@ function lathe(prof, segs, mat) {
 function makeFigure(o) {
   const g = new THREE.Group();
   const cloth = PHONG(o.cloth || '#f2f4f8');
+  const sleeveM = PHONG(o.sleeve || o.skirt || o.cloth || '#f2f4f8');
   const skirtM = PHONG(o.skirt || o.cape || o.cloth || '#e5b9c4');
   const skin = PHONG(o.skin || '#f2d9c2');
   const hair = PHONG(o.hair || '#5a4a55');
@@ -3259,14 +3260,14 @@ function makeFigure(o) {
   const SEG = 9;
 
   /* あし と くつ */
-  const legGeo = new THREE.CylinderGeometry(.056, .047, .46, 6); legGeo.translate(0, -.23, 0);
-  const shoeGeo = new THREE.BoxGeometry(.125, .08, .205); shoeGeo.translate(0, -.505, .024);
+  const legGeo = new THREE.CylinderGeometry(.055, .046, .44, 6); legGeo.translate(0, -.22, 0);
+  const shoeGeo = new THREE.BoxGeometry(.105, .066, .172); shoeGeo.translate(0, -.478, .018);
   const shoeM = PHONG(o.shoe || '#c8bfd0');
   const mkLeg = sx => {
     const grp = new THREE.Group();
     const l = new THREE.Mesh(legGeo, skin); grp.add(l);
     const sh = new THREE.Mesh(shoeGeo, shoeM); grp.add(sh);
-    grp.position.set(sx * .128, .52, 0);
+    grp.position.set(sx * .082, .50, 0);
     g.add(grp);
     return grp;
   };
@@ -3280,40 +3281,49 @@ function makeFigure(o) {
   top.position.y = .40; g.add(top); parts.body = top;
 
   /* えり */
-  const collar = new THREE.Mesh(new THREE.CylinderGeometry(.115, .145, .055, SEG), PHONG(o.collar || o.skirt || '#ffffff'));
+  const collar = new THREE.Mesh(new THREE.CylinderGeometry(.082, .106, .046, SEG), PHONG(o.collar || o.skirt || '#ffffff'));
   collar.position.y = 1.212; g.add(collar);
 
   /* くび と あたま */
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(.068, .076, .10, 6), skin);
-  neck.position.y = 1.255; g.add(neck);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.205, 11, 9), skin);
-  head.position.y = 1.44; head.scale.set(1, .97, .95);
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(.058, .066, .085, 6), skin);
+  neck.position.y = 1.244; g.add(neck);
+  const HR = .168;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(HR, 11, 9), skin);
+  head.position.y = 1.415; head.scale.set(1, .98, .95);
   g.add(head); parts.head = head;
 
   /* め : ちいさな点だけ */
   {
     const eyeM = new THREE.MeshBasicMaterial({ color: new THREE.Color(o.eye || '#413845') });
-    const eg = new THREE.SphereGeometry(.023, 6, 5);
+    const eg = new THREE.SphereGeometry(.0175, 6, 5);
     [-1, 1].forEach(sd => {
       const e = new THREE.Mesh(eg, eyeM);
-      e.position.set(sd * .069, 1.392, .188);
-      e.scale.set(1, 1.30, .65);
+      e.position.set(sd * .056, 1.366, .151);
+      e.scale.set(1, 1.16, .55);
       g.add(e);
       parts[sd < 0 ? 'eyeL' : 'eyeR'] = e;
     });
   }
 
   /* かみ : うしろ・つむじ・まえがみ */
-  const hairBack = new THREE.Mesh(new THREE.SphereGeometry(.222, 11, 9, 0, TAU, 0, Math.PI * (o.bald ? .34 : .555)), hair);
-  hairBack.position.y = 1.447; hairBack.scale.set(1, 1.02, 1.03);
-  g.add(hairBack);
-  if (!o.bald) {
-    const fringe = new THREE.Mesh(new THREE.SphereGeometry(.215, 10, 7, 0, TAU, 0, Math.PI * .30), hair);
-    fringe.position.set(0, 1.438, .026); fringe.rotation.x = .40;
+  const HB = HR + .014;
+  if (o.bald) {
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(HB, 11, 8, 0, TAU, 0, Math.PI * .34), hair);
+    cap.position.y = 1.418; g.add(cap);
+  } else {
+    /* よこ と うしろ : かおの ぶんだけ 前を あける */
+    const back = new THREE.Mesh(
+      new THREE.SphereGeometry(HB, 13, 9, Math.PI / 2 + .95, TAU - 1.90, 0, Math.PI * .60), hair);
+    back.position.y = 1.418; back.scale.set(1, 1.02, 1.03);
+    g.add(back);
+    /* まえがみ : ひたいを おおう */
+    const fringe = new THREE.Mesh(
+      new THREE.SphereGeometry(HB + .004, 11, 7, Math.PI / 2 - .99, 1.98, 0, Math.PI * .53), hair);
+    fringe.position.y = 1.418; fringe.scale.set(1, 1.02, 1.02);
     g.add(fringe);
     if (o.longHair) {
-      const tail = new THREE.Mesh(new THREE.SphereGeometry(.15, 8, 7), hair);
-      tail.position.set(0, 1.30, -.15); tail.scale.set(.85, 1.5, .7);
+      const tail = new THREE.Mesh(new THREE.SphereGeometry(.145, 8, 7), hair);
+      tail.position.set(0, 1.285, -.125); tail.scale.set(.8, 1.45, .68);
       g.add(tail);
     }
   }
@@ -3321,21 +3331,23 @@ function makeFigure(o) {
   /* ぼうし */
   if (o.hat) {
     const hm = PHONG(o.hat);
-    const brim = new THREE.Mesh(new THREE.CylinderGeometry(.36, .385, .035, 12), hm);
-    brim.position.y = 1.565; g.add(brim);
-    const crown = new THREE.Mesh(new THREE.ConeGeometry(.20, .27, 9), hm);
-    crown.position.y = 1.70; g.add(crown);
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(.325, .35, .033, 12), hm);
+    brim.position.y = 1.518; g.add(brim);
+    const crown = new THREE.Mesh(new THREE.ConeGeometry(.178, .25, 9), hm);
+    crown.position.y = 1.635; g.add(crown);
   }
 
   /* うで と て */
-  const armGeo = new THREE.CylinderGeometry(.055, .046, .40, 6); armGeo.translate(0, -.20, 0);
-  const handGeo = new THREE.SphereGeometry(.052, 7, 6); handGeo.translate(0, -.41, 0);
+  const sleeveGeo = new THREE.CylinderGeometry(.047, .041, .19, 6); sleeveGeo.translate(0, -.095, 0);
+  const foreGeo = new THREE.CylinderGeometry(.040, .034, .165, 6); foreGeo.translate(0, -.2725, 0);
+  const handGeo = new THREE.SphereGeometry(.043, 7, 6); handGeo.translate(0, -.376, 0);
   const mkArm = sx => {
     const grp = new THREE.Group();
-    grp.add(new THREE.Mesh(armGeo, cloth));
+    grp.add(new THREE.Mesh(sleeveGeo, sleeveM));
+    grp.add(new THREE.Mesh(foreGeo, skin));
     grp.add(new THREE.Mesh(handGeo, skin));
-    grp.position.set(sx * .243, 1.128, 0);
-    grp.rotation.z = -sx * .19;
+    grp.position.set(sx * .185, 1.112, .008);
+    grp.rotation.z = -sx * .115;
     g.add(grp);
     return grp;
   };
@@ -3344,9 +3356,9 @@ function makeFigure(o) {
 
   /* マント（もっている ひとだけ） */
   if (o.cape && o.capeOn) {
-    const cape = lathe([[.095, .38], [.175, .29], [.235, .13], [.262, 0]], SEG,
+    const cape = lathe([[.082, .155], [.125, .100], [.168, .040], [.196, 0]], SEG,
       PHONG(o.cape, { side: THREE.DoubleSide }));
-    cape.position.y = 1.035; g.add(cape); parts.cape = cape;
+    cape.position.y = 1.055; g.add(cape); parts.cape = cape;
   }
   if (o.bag) {
     const bag = new THREE.Mesh(new THREE.SphereGeometry(.115, 8, 6), PHONG(o.bag));
@@ -3365,7 +3377,8 @@ function makeFigure(o) {
 
   /* まえかがみ */
   if (o.bend) {
-    [top, collar, neck, head, hairBack, parts.eyeL, parts.eyeR, parts.armL, parts.armR].forEach(m => {
+    [top, collar, neck, head, parts.eyeL, parts.eyeR, parts.armL, parts.armR].concat(
+      g.children.filter(c => c.material === hair)).forEach(m => {
       if (!m) return;
       m.rotation.x = o.bend;
       m.position.z += o.bend * .18;
@@ -3680,7 +3693,7 @@ function spawnCast(w, cfg) {
     w.group.add(sh);
     cast.people.push({
       fig, mark, pos, name: f.name, pitch: f.pitch, lines: def.lines.slice(), key: !!def.key,
-      top: (fig.sit ? 1.48 : 1.86) * (f.scale || 1) + .18,
+      top: (fig.sit ? 1.34 : 1.70) * (f.scale || 1) + .16,
       i: 0, last: -99, ph: rnd() * TAU, face: fig.g.rotation.y, faceT: fig.g.rotation.y
     });
     /* つれ（いぬ など） */
@@ -4014,7 +4027,7 @@ function nightmareBeat() {
    ========================================================================= */
 const BUB = { npc: null, until: 0 };
 /* じぶん自身を ふきだしの あいてに する */
-const ME = { pos: null, top: 1.98, name: 'わたし', me: true };
+const ME = { pos: null, top: 1.82, name: 'わたし', me: true };
 
 /* ひとりごと */
 function monologue(text, hold) {
