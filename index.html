@@ -123,6 +123,19 @@
   #say .who{display:block;font-size:10.5px;letter-spacing:.34em;text-indent:.34em;
     color:rgba(255,238,206,.72);margin-bottom:8px;}
 
+  /* たいせつな 場面の 黒帯 */
+  #bars{position:absolute;inset:0;pointer-events:none;z-index:15;opacity:0;transition:opacity .7s ease;}
+  #bars i{position:absolute;left:0;right:0;height:10.5vh;background:rgba(10,7,14,.86);
+    transition:transform .85s cubic-bezier(.2,.85,.3,1);}
+  #bars .top{top:0;transform:translateY(-101%);}
+  #bars .bot{bottom:0;transform:translateY(101%);}
+  #bars.on{opacity:1;}
+  #bars.on i{transform:translateY(0);}
+  #bars .skip{position:absolute;right:14px;bottom:calc(10.5vh + 12px);
+    font-size:10px;letter-spacing:.22em;color:rgba(255,250,240,.34);height:auto;background:none;
+    transform:none;transition:opacity .6s ease;opacity:0;}
+  #bars.on .skip{opacity:1;}
+
   /* ふきだし */
   #bubWrap{position:absolute;left:0;top:0;width:0;height:0;z-index:19;pointer-events:none;
     will-change:transform;}
@@ -232,6 +245,7 @@
 
   <div id="say"></div>
   <div id="tip"></div>
+  <div id="bars"><i class="top"></i><i class="bot"></i><i class="skip">タップで つぎへ</i></div>
   <div id="bubWrap"><div id="bubble"></div></div>
   <button id="btnOpen">ひらく</button>
   <div id="joy"><div id="joyK"></div></div>
@@ -521,6 +535,18 @@ const AU = {
     if (!this.ready) return;
     this.master.gain.cancelScheduledValues(this.now());
     this.master.gain.setTargetAtTime(m ? 0 : this.vol, this.now(), .18);
+  },
+  duckHold(amount) {
+    if (!this.ready) return;
+    const g = this.musicBus.gain, t = this.now();
+    g.cancelScheduledValues(t);
+    g.setTargetAtTime(.78 * amount, t, .35);
+  },
+  unduck() {
+    if (!this.ready) return;
+    const g = this.musicBus.gain, t = this.now();
+    g.cancelScheduledValues(t);
+    g.setTargetAtTime(.78, t, .9);
   },
   duck(amount, time) {
     if (!this.ready) return;
@@ -1218,7 +1244,7 @@ const CHAPTERS = [
     opening: 'ひとの すむ においが する。ひさしぶり。', firstThought: 'まどが ひとつ、ともった。',
     people: [
       {
-        kind: 'keeper', at: [.55, .40],
+        kind: 'keeper', at: [.55, .40], key: true,
         lines: ['この まちには、とびらが おおい。', '*だれが つくったの?',
           'だれでもない。「いきたい」と おもった ばしょに、ひとりでに できる。',
           'ここの ひとは、みんな じぶんの とびらを とじた。',
@@ -1260,7 +1286,7 @@ const CHAPTERS = [
     opening: '……ここ、しってる。', firstThought: 'てが ふるえてる。でも、あるける。',
     people: [
       {
-        kind: 'past', at: [.55, 3.4],
+        kind: 'past', at: [.55, 3.4], key: true,
         lines: ['ひさしぶり。', '*……だれ?', 'わかってる くせに。',
           'あるくのを やめようと おもったこと、あるでしょう。', '*ある。',
           'わたしは、そこで やめたの。', 'くらいけど、もう つかれないよ。',
@@ -1292,7 +1318,7 @@ const CHAPTERS = [
     opening: 'ゆめから でたら、まだ そらが あかるかった。', firstThought: 'あと すこしなのが、わかる。',
     people: [
       {
-        kind: 'granny', at: [-1.25, .46],
+        kind: 'granny', at: [-1.25, .46], key: true,
         lines: ['わたしも、たくさんの とびらを あけたよ。', '*こわく なかった?',
           'こわかった。あけられなかった とびらも ある。',
           'あの ゆめの ばしょ、とおってきたのね。',
@@ -1335,7 +1361,7 @@ const CHAPTERS = [
     animals: [{ kind: 'cat', n: 1, color: '#eae4f2', tame: true }],
     people: [
       {
-        kind: 'hat', at: [.09, .57],
+        kind: 'hat', at: [.09, .57], key: true,
         lines: ['やっぱり、きたね。', '*まってたの?', 'うん。ここで まつことに したよ。',
           'つぎの ひとが とおるまで。', 'あの まちの あかりみたいに ね。',
           '*……ありがとう。', 'いってらっしゃい。']
@@ -1681,6 +1707,16 @@ function buildWorld(cfg) {
   const spawn = new THREE.Vector3(Math.sin(dA + Math.PI) * R * (cfg.spawnR || .30), 0,
     Math.cos(dA + Math.PI) * R * (cfg.spawnR || .30));
 
+  /* ひとが 立つ ところ（木を どけるため さきに 見つもる） */
+  const peopleSpots = (cfg.people || []).map(def => {
+    if (cfg.corridor) {
+      const q = pathPoint(corridorPath(cfg), clamp(def.at[0], 0, 1));
+      return new THREE.Vector3(q.x + q.nx * def.at[1], 0, q.z + q.nz * def.at[1]);
+    }
+    const a = dA + def.at[0];
+    return new THREE.Vector3(Math.sin(a) * R * def.at[1], 0, Math.cos(a) * R * def.at[1]);
+  });
+
   const lanternSpots = [];
   const need = cfg.lanterns;
   if (cfg.corridor) {
@@ -1786,6 +1822,7 @@ function buildWorld(cfg) {
       if (cfg.corridor && distToPath(corridorPath(cfg), x, z) < cfg.corridor.w * .8) continue;
       let ok = true;
       for (const s of lanternSpots) if (Math.hypot(x - s.x, z - s.z) < 6) { ok = false; break; }
+      if (ok) for (const s of peopleSpots) if (Math.hypot(x - s.x, z - s.z) < 8.5) { ok = false; break; }
       if (!ok) continue;
       spots.push([x, y, z]);
     }
@@ -2186,6 +2223,7 @@ function initInput() {
   const R = 52;
 
   function down(e) {
+    if (G.state === 'talk' && SCENE && SCENE.t > 1.0) { SCENE.t = 1e6; return; }
     if (!IN.enabled) return;
     /* UIボタンの上では操作をつかまえない（クリックを奪わないため） */
     if (e.target && e.target.closest && e.target.closest('button')) return;
@@ -2330,6 +2368,7 @@ function enterChapter(i) {
   G.fear = 0; G.heartT = 1; G.whisT = 7; G.nightBeat = false; G.birdT = 6;
   $('dread').style.opacity = 0;
   bubbleHide();
+  if (typeof SCENE !== 'undefined' && SCENE) { SCENE = null; $('bars').classList.remove('on'); AU.unduck(); }
   const cfg = CHAPTERS[i];
   G.need = cfg.lanterns;
   W = buildWorld(cfg);
@@ -2866,7 +2905,7 @@ function updatePlayer(dt) {
   PL.lamp.scale.setScalar(nm ? 3.4 : 1.9);
 
   /* あしおと */
-  if (PL.speed > .12 && (G.state === 'play' || G.state === 'ending')) {
+  if (PL.speed > .12 && (G.state === 'play' || G.state === 'ending' || G.state === 'talk')) {
     PL.stepT += dt * PL.speed;
     const iv = .46;
     if (PL.stepT > iv) {
@@ -2885,6 +2924,7 @@ function updatePlayer(dt) {
 }
 
 function updateCamera(dt) {
+  if (G.state === 'talk') { updateSceneCamera(dt); return; }
   if (G.state === 'title') {
     IN.yaw += dt * .045;
     const d = W.door.pos;
@@ -3072,6 +3112,7 @@ function loop() {
   if (W) {
     updatePlayer(dt);
     updatePlay(dt);
+    updateScene(dt);
     updateWorld(dt);
     updateCamera(dt);
     updateBursts(dt);
@@ -3638,7 +3679,7 @@ function spawnCast(w, cfg) {
     sh.rotation.x = -Math.PI / 2; sh.position.set(pos.x, pos.y + .07, pos.z);
     w.group.add(sh);
     cast.people.push({
-      fig, mark, pos, name: f.name, pitch: f.pitch, lines: def.lines.slice(),
+      fig, mark, pos, name: f.name, pitch: f.pitch, lines: def.lines.slice(), key: !!def.key,
       top: (fig.sit ? 1.48 : 1.86) * (f.scale || 1) + .18,
       i: 0, last: -99, ph: rnd() * TAU, face: fig.g.rotation.y, faceT: fig.g.rotation.y
     });
@@ -3853,6 +3894,11 @@ function spawnFish(w) {
 function updateTalk(dt) {
   const cast = W.cast;
   if (!cast || G.state !== 'play') return;
+  /* たいせつな はなしは、ちかづいたら さいごまで ながれる */
+  for (const n of cast.people) {
+    if (!n.key || n.i >= n.lines.length) continue;
+    if (Math.hypot(PL.pos.x - n.pos.x, PL.pos.z - n.pos.z) < 6.5) { startScene(n); return; }
+  }
   cast.people.forEach(n => {
     const d = Math.hypot(PL.pos.x - n.pos.x, PL.pos.z - n.pos.z);
     if (d < 3.8 && n.i < n.lines.length && G.t - n.last > 3.9) {
@@ -3881,7 +3927,7 @@ function updateNightmare(w, dt) {
     const d = Math.hypot(dx, dz);
     near = Math.min(near, d);
     /* ゆっくり ついてくる。ふれることは ない */
-    if (d > 4.6 && d < 70) {
+    if (d > (G.state === 'talk' ? 8.5 : 4.6) && d < 70) {
       const k = s.sp * dt * (d > 22 ? 1.5 : 1);
       s.pos.x += dx / d * k; s.pos.z += dz / d * k;
     }
@@ -3910,7 +3956,7 @@ function updateNightmare(w, dt) {
   }
   /* こわいときの ひとりごと */
   G.braveT = (G.braveT || 0) - dt;
-  if (G.fear > .70 && G.braveT <= 0 && !BUB.npc) {
+  if (G.fear > .70 && G.braveT <= 0 && !BUB.npc && G.state === 'play') {
     G.braveT = 16 + Math.random() * 10;
     monologue(NIGHT_BRAVE[(Math.random() * NIGHT_BRAVE.length) | 0], 4.4);
   }
@@ -3921,7 +3967,7 @@ function updateNightmare(w, dt) {
     G.whisT = 5 + Math.random() * 8 - G.fear * 3;
     if (G.fear > .22) {
       SFX.whisper();
-      if (Math.random() < .55) {
+      if (Math.random() < .55 && G.state === 'play') {
         const w2 = NIGHT_WHISPERS[(Math.random() * NIGHT_WHISPERS.length) | 0];
         say(w2, 3200, '　');
       }
@@ -4003,7 +4049,7 @@ function updateBubble() {
   const n = BUB.npc;
   if (!n) return;
   const el = $('bubble'), wrap = $('bubWrap');
-  if (G.t > BUB.until || G.state !== 'play') { bubbleHide(); return; }
+  if (G.t > BUB.until || (G.state !== 'play' && G.state !== 'talk')) { bubbleHide(); return; }
 
   _bv.set(n.pos.x, n.pos.y + (n.top || 2.0), n.pos.z).project(camera);
   const w = innerWidth, h = innerHeight;
@@ -4018,6 +4064,125 @@ function updateBubble() {
   const tail = el.querySelector('.tail');
   if (tail) tail.style.left = clamp(x - (cx - bw / 2), 16, bw - 16).toFixed(1) + 'px';
   el.classList.add('show');
+}
+
+/* =========================================================================
+   たいせつな 場面  ―  ちかづいたら さいごまで ながれる会話
+   ========================================================================= */
+let SCENE = null;
+
+function sceneLineTime(text) {
+  return clamp(2.5 + text.replace(/[*\n]/g, '').length * .105, 3.0, 6.6);
+}
+
+function startScene(n) {
+  if (SCENE) return;
+  G.state = 'talk';
+  IN.enabled = false; IN.mv.x = IN.mv.y = 0;
+  $('joy').classList.remove('on');
+  $('btnOpen').classList.remove('show');
+  $('hud').classList.add('hidden');
+  $('say').classList.remove('show');
+  $('bars').classList.add('on');
+  AU.duckHold(.55);
+
+  /* むきあう */
+  const toN = Math.atan2(n.pos.x - PL.pos.x, n.pos.z - PL.pos.z);
+  PL.face = toN;
+  n.faceT = toN + Math.PI;
+
+  /* そばまで あるいてゆく */
+  const ax = Math.sin(toN), az = Math.cos(toN);
+  const stop = new THREE.Vector3(n.pos.x - ax * 2.35, 0, n.pos.z - az * 2.35);
+  stop.y = W && W.H ? W.H(stop.x, stop.z) : PL.pos.y;
+
+  /* カメラ : たて画面でも ふたり おさまる ななめ後ろから */
+  const mid = new THREE.Vector3((stop.x + n.pos.x) / 2, (stop.y + n.pos.y) / 2, (stop.z + n.pos.z) / 2);
+  let sx = Math.cos(toN), sz = -Math.sin(toN);
+  if ((camera.position.x - mid.x) * sx + (camera.position.z - mid.z) * sz < 0) { sx = -sx; sz = -sz; }
+  /* よこ 0.86 : うしろ 0.5 に かたむけて、ふたりの ひらきを おさえる */
+  let ox = sx * .86 - ax * .5, oz = sz * .86 - az * .5;
+  const ol = Math.hypot(ox, oz) || 1; ox /= ol; oz /= ol;
+  SCENE = {
+    n, i: 0, t: 999, hold: 0, mid, sx: ox, sz: oz, drift: 0, done: false,
+    from: PL.pos.clone(), stop, walk: 0
+  };
+}
+
+function endScene() {
+  if (!SCENE) return;
+  const n = SCENE.n;
+  n.last = G.t;
+  SCENE = null;
+  G.state = 'play';
+  IN.enabled = true;
+  IN.camIdle = 0;
+  $('bars').classList.remove('on');
+  $('hud').classList.remove('hidden');
+  AU.unduck();
+  bubbleHide();
+  G.metPeople++;
+}
+
+function updateScene(dt) {
+  if (!SCENE) return;
+  const sc = SCENE, n = sc.n;
+  sc.t += dt;
+  sc.drift += dt;
+
+  /* さいしょの 1びょうで そばへ */
+  if (sc.walk < 1) {
+    sc.walk = Math.min(1, sc.walk + dt / 1.1);
+    const e = easeInOut(sc.walk);
+    PL.pos.lerpVectors(sc.from, sc.stop, e);
+    if (W && W.H) PL.pos.y = W.H(PL.pos.x, PL.pos.z);
+    PL.speed = sc.walk < .92 ? .9 : 0;
+    sc.mid.set((PL.pos.x + n.pos.x) / 2, (PL.pos.y + n.pos.y) / 2, (PL.pos.z + n.pos.z) / 2);
+  }
+
+  /* せりふ を すすめる */
+  if (!sc.done && sc.t >= sc.hold) {
+    if (sc.i >= n.lines.length) {
+      sc.done = true; sc.hold = 1.1; sc.t = 0;
+    } else {
+      const raw = n.lines[sc.i];
+      if (raw.charAt(0) === '*') { bubbleShow(ME, raw.slice(1)); SFX.talk(71); }
+      else { bubbleShow(n, raw); SFX.talk(n.pitch + (sc.i % 2 ? 5 : 0)); }
+      BUB.until = G.t + 30;
+      sc.hold = sceneLineTime(raw);
+      sc.t = 0;
+      sc.i++;
+      n.i = sc.i;
+    }
+  } else if (sc.done && sc.t >= sc.hold) {
+    endScene();
+    return;
+  }
+
+  /* むきあいつづける */
+  const toN = Math.atan2(n.pos.x - PL.pos.x, n.pos.z - PL.pos.z);
+  PL.face = lerpAngle(PL.face, toN, 1 - Math.exp(-dt * 3));
+  PL.g.rotation.y = PL.face;
+  n.faceT = toN + Math.PI;
+}
+
+function updateSceneCamera(dt) {
+  const sc = SCENE;
+  if (!sc) return;
+  const a = sc.drift * .055;
+  const ox = sc.sx * Math.cos(a) - sc.sz * Math.sin(a);
+  const oz = sc.sx * Math.sin(a) + sc.sz * Math.cos(a);
+  const want = new THREE.Vector3(
+    sc.mid.x + ox * 5.9, sc.mid.y + 2.05 + Math.sin(sc.drift * .35) * .12, sc.mid.z + oz * 5.9
+  );
+  if (W && W.H) {
+    const gy = W.H(want.x, want.z) + 1.1;
+    if (want.y < gy) want.y = gy;
+  }
+  camera.position.lerp(want, 1 - Math.exp(-dt * 2.2));
+  _tgt.set(sc.mid.x, sc.mid.y + 1.22, sc.mid.z);
+  camTarget.lerp(_tgt, 1 - Math.exp(-dt * 3));
+  camera.lookAt(camTarget);
 }
 </script>
 <script>
